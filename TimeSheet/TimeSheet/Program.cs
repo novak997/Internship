@@ -23,14 +23,6 @@ namespace TimeSheet
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    /*CategoryRepository categoryRepository = new CategoryRepository();
-                    Category category = new Category
-                    {
-                        Name = "backend"
-                    };
-                    categoryRepository.AddCategory(category);
-                    System.Diagnostics.Debug.WriteLine("tako nesto");
-                    */
                 });
     }
 }

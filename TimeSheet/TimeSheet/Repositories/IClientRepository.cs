@@ -15,6 +15,6 @@ namespace TimeSheet.Repositories
         public void DeleteClientPhysically(int id);
         public void DeleteClientLogically(int id);
         public IEnumerable<Client> SearchClients(string name);
-        public IEnumerable<string> GetClientsFirstLetters();
+        //public IEnumerable<string> GetClientsFirstLetters();
     }
 }
