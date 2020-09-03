@@ -1,52 +1,109 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using TimeSheet.Models;
-using Microsoft.EntityFrameworkCore;
-using TimeSheet.Context;
+using Microsoft.Data.SqlClient;
 
 namespace TimeSheet.Repositories
 {
     public class ProjectRepository : IProjectRepository
     {
-        private readonly DatabaseContext _context;
-        public ProjectRepository(DatabaseContext context)
-        {
-            _context = context;
-        }
+        private readonly string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=timesheet;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
         public void AddProject(Project project)
         {
-            _context.Database.ExecuteSqlRaw("exec uspAddProject {0}, {1}, {2}, {3}", project.Name,
-                project.Description, project.ClientID, project.LeadID);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspAddProject", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@name", project.Name);
+            command.Parameters.AddWithValue("@description", project.Description);
+            command.Parameters.AddWithValue("@client", project.ClientID);
+            command.Parameters.AddWithValue("@lead", project.LeadID);
+            command.ExecuteNonQuery();
         }
 
         public void DeleteProjectLogically(int id)
         {
-            _context.Database.ExecuteSqlRaw("exec uspDeleteProjectLogically {0}", id);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspDeleteProjectLogically", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@id", id);
+            command.ExecuteNonQuery();
         }
 
         public void DeleteProjectPhysically(int id)
         {
-            _context.Database.ExecuteSqlRaw("exec uspDeleteProjectPhysically {0}", id);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspDeleteProjectPhysically", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@id", id);
+            command.ExecuteNonQuery();
         }
 
         public IEnumerable<Project> GetAllProjects()
         {
-            return _context.Projects.FromSqlRaw("exec uspGetAllProjects").ToList();
+            List<Project> projects = new List<Project>();
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetAllProjects", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Project project = new Project()
+                {
+                    ID = Convert.ToInt32(reader["id"]),
+                    Name = reader["name"].ToString(),
+                    Description = reader["description"].ToString(),
+                    Status = reader["status"].ToString(),
+                    ClientID = Convert.ToInt32(reader["client"]),
+                    LeadID = Convert.ToInt32(reader["lead"]),
+                    IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                };
+                projects.Add(project);
+            }
+            return projects;
         }
 
         public Project GetProjectById(int id)
         {
-            return _context.Projects.FromSqlRaw("exec uspGetProjectById {0}", id).FirstOrDefault();
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetProjectById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@id", id);
+            SqlDataReader reader = command.ExecuteReader();
+            Project project = new Project();
+            while (reader.Read())
+            {
+                project.ID = Convert.ToInt32(reader["id"]);
+                project.Name = reader["name"].ToString();
+                project.Description = reader["description"].ToString();
+                project.Status = reader["status"].ToString();
+                project.ClientID = Convert.ToInt32(reader["client"]);
+                project.LeadID = Convert.ToInt32(reader["lead"]);
+                project.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+            }
+            return project;
         }
-        /*
+        
         public IEnumerable<string> GetProjectsFirstLetters()
         {
             List<string> letters = new List<string>();
-            using SqlConnection connection = new SqlConnection(_connection);
+            using SqlConnection connection = new SqlConnection(_connectionString);
             SqlCommand command = new SqlCommand("uspGetProjectsFirstLetters", connection)
             {
                 CommandType = CommandType.StoredProcedure
@@ -59,16 +116,75 @@ namespace TimeSheet.Repositories
             }
             return letters;
         }
-        */
+        
         public IEnumerable<Project> SearchProjects(string name)
         {
-            return _context.Projects.FromSqlRaw("exec uspSearchProjects {0}", name).ToList();
+            List<Project> projects = new List<Project>();
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspSearchProjects", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@name", name);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Project project = new Project()
+                {
+                    ID = Convert.ToInt32(reader["id"]),
+                    Name = reader["name"].ToString(),
+                    Description = reader["description"].ToString(),
+                    Status = reader["status"].ToString(),
+                    ClientID = Convert.ToInt32(reader["client"]),
+                    LeadID = Convert.ToInt32(reader["lead"]),
+                    IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                };
+                projects.Add(project);
+            }
+            return projects;
         }
 
         public void UpdateProject(Project project)
         {
-            _context.Database.ExecuteSqlRaw("exec uspUpdateProject {0}, {1}, {2}, {3}, {4}", project.Name,
-                project.Description, project.ClientID, project.LeadID, project.ID);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspUpdateProject", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@name", project.Name);
+            command.Parameters.AddWithValue("@description", project.Description);
+            command.Parameters.AddWithValue("@client", project.ClientID);
+            command.Parameters.AddWithValue("@lead", project.LeadID);
+            command.Parameters.AddWithValue("@status", project.Status);
+            command.Parameters.AddWithValue("@id", project.ID);
+            command.ExecuteNonQuery();
+        }
+
+        public Project GetProjectByNameAndClient(string name, int client)
+        {
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetProjectByNameAndClient", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@name", name);
+            command.Parameters.AddWithValue("@client", client);
+            SqlDataReader reader = command.ExecuteReader();
+            Project project = new Project();
+            while (reader.Read())
+            {
+                project.ID = Convert.ToInt32(reader["id"]);
+                project.Name = reader["name"].ToString();
+                project.Description = reader["description"].ToString();
+                project.Status = reader["status"].ToString();
+                project.ClientID = Convert.ToInt32(reader["client"]);
+                project.LeadID = Convert.ToInt32(reader["lead"]);
+                project.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+            }
+            return project;
         }
     }
 }

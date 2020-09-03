@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TimeSheet.Controllers.DTO;
 using TimeSheet.Models;
 
 namespace TimeSheet.Repositories
@@ -15,5 +16,7 @@ namespace TimeSheet.Repositories
         public void ChangePassword(string password, int id);
         public void DeleteUserPhysically(int id);
         public void DeleteUserLogically(int id);
+        public User GetUserByUsername(string username);
+        public User GetUserByEmail(string email);
     }
 }

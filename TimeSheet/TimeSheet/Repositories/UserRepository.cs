@@ -1,57 +1,193 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TimeSheet.Models;
 using System.Data;
+using TimeSheet.Controllers.DTO;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using TimeSheet.Context;
 
 namespace TimeSheet.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly DatabaseContext _context;
-        public UserRepository(DatabaseContext context)
-        {
-            _context = context;
-        }
+        private readonly string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=timesheet;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
         public void AddUser(User user)
         {
-            _context.Database.ExecuteSqlRaw("exec uspAddUser {0}, {1}, {2}, {3}, {4}, {5}", user.Name,
-                user.Weekly, user.Username, user.Email, user.IsActive, user.IsAdmin);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspAddUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@name", user.Name);
+            command.Parameters.AddWithValue("@weekly", user.Weekly);
+            command.Parameters.AddWithValue("@email", user.Email);
+            command.Parameters.AddWithValue("@username", user.Username);
+            command.Parameters.AddWithValue("@isActive", user.IsActive);
+            command.Parameters.AddWithValue("@isAdmin", user.IsAdmin);
+            command.ExecuteNonQuery();
         }
 
         public void ChangePassword(string password, int id)
         {
-            _context.Database.ExecuteSqlRaw("exec uspChangePassword {0}, {1}", password, id);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspChangePassword", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@password", password);
+            command.Parameters.AddWithValue("@id", id);
+            command.ExecuteNonQuery();
         }
 
         public void DeleteUserLogically(int id)
         {
-            _context.Database.ExecuteSqlRaw("exec uspDeleteUserLogically {0}", id);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspDeleteUserLogically", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@id", id);
+            command.ExecuteNonQuery();
         }
 
         public void DeleteUserPhysically(int id)
         {
-            _context.Database.ExecuteSqlRaw("exec uspDeleteUserPhysically {0}", id);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspDeleteUserPhysically", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@id", id);
+            command.ExecuteNonQuery();
         }
 
         public IEnumerable<User> GetAllUsers()
         {
-            return _context.Users.FromSqlRaw("exec uspGetAllUsers").ToList();
+            List<User> users = new List<User>();
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetAllUsers", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                User user = new User()
+                {
+                    ID = Convert.ToInt32(reader["id"]),
+                    Weekly = Convert.ToDouble(reader["weekly"]),
+                    Name = reader["name"].ToString(),
+                    Email = reader["email"].ToString(),
+                    Username = reader["username"].ToString(),
+                    Password = reader["password"].ToString(),
+                    IsActive = Convert.ToBoolean(reader["isActive"]),
+                    IsAdmin = Convert.ToBoolean(reader["isAdmin"]),
+                    IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                };
+                users.Add(user);
+            }
+            return users;
         }
 
         public User GetUserById(int id)
         {
-            return _context.Users.FromSqlRaw("exec uspGetUserById {0}", id).FirstOrDefault();
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetUserById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@id", id);
+            SqlDataReader reader = command.ExecuteReader();
+            User user = new User();
+            while (reader.Read())
+            {
+                user.ID = Convert.ToInt32(reader["id"]);
+                user.Weekly = Convert.ToDouble(reader["weekly"]);
+                user.Name = reader["name"].ToString();
+                user.Email = reader["email"].ToString();
+                user.Username = reader["username"].ToString();
+                user.Password = reader["password"].ToString();
+                user.IsActive = Convert.ToBoolean(reader["isActive"]);
+                user.IsAdmin = Convert.ToBoolean(reader["isAdmin"]);
+                user.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+            }
+            return user;
         }
 
         public void UpdateUser(User user)
         {
-            _context.Database.ExecuteSqlRaw("exec uspUpdateUser {0}, {1}, {2}, {3}, {4}, {5}, {6}", 
-                user.Name, user.Weekly, user.Username, user.Email, user.IsActive, user.IsAdmin, user.ID);
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspUpdateUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@name", user.Name);
+            command.Parameters.AddWithValue("@weekly", user.Weekly);
+            command.Parameters.AddWithValue("@email", user.Email);
+            command.Parameters.AddWithValue("@username", user.Username);
+            command.Parameters.AddWithValue("@isActive", user.IsActive);
+            command.Parameters.AddWithValue("@isAdmin", user.IsAdmin);
+            command.Parameters.AddWithValue("@id", user.ID);
+            command.ExecuteNonQuery();
+        }
+
+        public User GetUserByUsername(string username)
+        {
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetUserByUsername", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@username", username);
+            SqlDataReader reader = command.ExecuteReader();
+            User user = new User();
+            while (reader.Read())
+            {
+                user.ID = Convert.ToInt32(reader["id"]);
+                user.Weekly = Convert.ToDouble(reader["weekly"]);
+                user.Name = reader["name"].ToString();
+                user.Email = reader["email"].ToString();
+                user.Username = reader["username"].ToString();
+                user.Password = reader["password"].ToString();
+                user.IsActive = Convert.ToBoolean(reader["isActive"]);
+                user.IsAdmin = Convert.ToBoolean(reader["isAdmin"]);
+                user.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+            }
+            return user;
+        }
+
+        public User GetUserByEmail(string email)
+        {
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetUserByEmail", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@email", email);
+            SqlDataReader reader = command.ExecuteReader();
+            User user = new User();
+            while (reader.Read())
+            {
+                user.ID = Convert.ToInt32(reader["id"]);
+                user.Weekly = Convert.ToDouble(reader["weekly"]);
+                user.Name = reader["name"].ToString();
+                user.Email = reader["email"].ToString();
+                user.Username = reader["username"].ToString();
+                user.Password = reader["password"].ToString();
+                user.IsActive = Convert.ToBoolean(reader["isActive"]);
+                user.IsAdmin = Convert.ToBoolean(reader["isAdmin"]);
+                user.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+            }
+            return user;
         }
     }
 }

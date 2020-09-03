@@ -11,5 +11,6 @@ namespace TimeSheet.Repositories
         public void AddCategory(Category category);
         public Category GetCategoryById(int id);
         public IEnumerable<Category> GetAllCategories();
+        public Category GetCategoryByName(string name);
     }
 }

@@ -5,26 +5,30 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using TimeSheet.Models;
 using TimeSheet.Repositories;
+using TimeSheet.Services;
 
 namespace TimeSheet.Controllers
 {
     [Route("api/[controller]")]
     public class CountryController : Controller
     {
-        private readonly CountryRepository _countryRepository;
-        public CountryController(CountryRepository countryRepository)
-        {
-            _countryRepository = countryRepository;
-        }
+        private readonly CountryService _countryService = new CountryService();
         public IActionResult Index()
         {
             return View();
         }
 
         [HttpPost]
-        public void AddCountry([FromBody] Country country)
+        public JsonResult AddCountry([FromBody] Country country)
         {
-            _countryRepository.AddCountry(country);
+            return Json(_countryService.AddCountry(country));
         }
+        
+        [HttpGet]
+        public JsonResult GetAllCountries()
+        {
+            return Json(_countryService.GetAllCountries());
+        }
+        
     }
 }

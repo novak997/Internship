@@ -15,6 +15,7 @@ namespace TimeSheet.Repositories
         public void DeleteProjectPhysically(int id);
         public void DeleteProjectLogically(int id);
         public IEnumerable<Project> SearchProjects(string name);
-        //public IEnumerable<string> GetProjectsFirstLetters();
+        public IEnumerable<string> GetProjectsFirstLetters();
+        public Project GetProjectByNameAndClient(string name, int client);
     }
 }

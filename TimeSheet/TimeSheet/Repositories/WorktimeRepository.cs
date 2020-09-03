@@ -1,37 +1,98 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TimeSheet.Models;
 using System.Data;
+using TimeSheet.Controllers.DTO;
 using Microsoft.Data.SqlClient;
-using TimeSheet.Context;
-using Microsoft.EntityFrameworkCore;
 
 namespace TimeSheet.Repositories
 {
     public class WorktimeRepository : IWorktimeRepository
     {
-        private readonly DatabaseContext _context;
-        public WorktimeRepository(DatabaseContext context)
-        {
-            _context = context;
-        }
+        private readonly string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=timesheet;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+
         public void AddWorktime(Worktime worktime)
         {
-            _context.Database.ExecuteSqlRaw("exec uspAddWorktime {0}, {1}, {2}, {3}, {4}, {5}, {6}", worktime.ClientID, 
-                worktime.ProjectID, worktime.CategoryID, worktime.UserID, worktime.Description, worktime.Hours, worktime.Overtime);
-            
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspAddWorktime", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@description", worktime.Description);
+            command.Parameters.AddWithValue("@hours", worktime.Hours);
+            command.Parameters.AddWithValue("@overtime", worktime.Overtime);
+            command.Parameters.AddWithValue("@date", worktime.Date);
+            command.Parameters.AddWithValue("@client", worktime.ClientID);
+            command.Parameters.AddWithValue("@project", worktime.ProjectID);
+            command.Parameters.AddWithValue("@category", worktime.CategoryID);
+            command.Parameters.AddWithValue("@user", worktime.UserID);
+            command.ExecuteNonQuery();
         }
 
         public IEnumerable<Worktime> GetWorktimesForUser(int id)
         {
-            return _context.Worktimes.FromSqlRaw("exec uspGetWorktimesForUser {0}", id).ToList();
+            List<Worktime> worktimes = new List<Worktime>();
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetWorktimesForUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@id", id);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Worktime worktime = new Worktime()
+                {
+                    ID = Convert.ToInt32(reader["id"]),
+                    Description = reader["description"].ToString(),
+                    Hours = Convert.ToDouble(reader["hours"]),
+                    Overtime = Convert.ToDouble(reader["overtime"]),
+                    Date = Convert.ToDateTime(reader["date"]),
+                    ClientID = Convert.ToInt32(reader["client"]),
+                    ProjectID = Convert.ToInt32(reader["project"]),
+                    CategoryID = Convert.ToInt32(reader["category"]),
+                    UserID = Convert.ToInt32(reader["user"]),
+                };
+                worktimes.Add(worktime);
+            }
+            return worktimes;
         }
 
-        IEnumerable<Worktime> IWorktimeRepository.FilterReports(int user, int client, int project, int category, DateTime startDate, DateTime endDate)
+        public IEnumerable<Worktime> FilterReports(WorktimeFilterDTO worktimeFilterDTO)
         {
-            return _context.Worktimes.FromSqlRaw("exec uspFilterReports {0}, {1}, {2}, {3}, {4}, {5}", user, client, project, category, startDate, endDate).ToList();
+            List<Worktime> worktimes = new List<Worktime>();
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            SqlCommand command = new SqlCommand("dbo.uspGetWorktimesForUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            connection.Open();
+            command.Parameters.AddWithValue("@user", worktimeFilterDTO.UserID);
+            command.Parameters.AddWithValue("@client", worktimeFilterDTO.ClientID);
+            command.Parameters.AddWithValue("@project", worktimeFilterDTO.ProjectID);
+            command.Parameters.AddWithValue("@category", worktimeFilterDTO.CategoryID);
+            command.Parameters.AddWithValue("@startDate", worktimeFilterDTO.StartDate);
+            command.Parameters.AddWithValue("@endDate", worktimeFilterDTO.EndDate);
+            SqlDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                Worktime worktime = new Worktime()
+                {
+                    ID = Convert.ToInt32(reader["id"]),
+                    Description = reader["description"].ToString(),
+                    Hours = Convert.ToDouble(reader["hours"]),
+                    Overtime = Convert.ToDouble(reader["overtime"]),
+                    Date = Convert.ToDateTime(reader["date"]),
+                    ClientID = Convert.ToInt32(reader["client"]),
+                    ProjectID = Convert.ToInt32(reader["project"]),
+                    CategoryID = Convert.ToInt32(reader["category"]),
+                    UserID = Convert.ToInt32(reader["user"]),
+                };
+                worktimes.Add(worktime);
+            }
+            return worktimes;
         }
     }
 }

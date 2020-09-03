@@ -13,6 +13,6 @@ namespace TimeSheet.Models
         public string City { get; set; }
         public string Zip { get; set; }
         public int CountryID { get; set; }
-        public bool isDeleted { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

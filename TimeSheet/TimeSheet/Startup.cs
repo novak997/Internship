@@ -10,9 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using TimeSheet.Context;
 using TimeSheet.Repositories;
+using TimeSheet.Services;
 
 namespace TimeSheet
 {
@@ -29,9 +28,7 @@ namespace TimeSheet
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Database")));
-
-            services.AddTransient<CountryRepository>();
+            services.AddTransient<CategoryService>();
 
         }
 
