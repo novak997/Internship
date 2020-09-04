@@ -10,8 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using TimeSheet.Repositories;
-using TimeSheet.Services;
+using TimeSheet.Business.Services;
 
 namespace TimeSheet
 {
@@ -29,6 +28,7 @@ namespace TimeSheet
         {
             services.AddControllers();
             services.AddTransient<CategoryService>();
+            services.AddMvc();
 
         }
 

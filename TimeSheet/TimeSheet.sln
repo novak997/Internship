@@ -3,7 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeSheet", "TimeSheet\TimeSheet.csproj", "{24B16A67-B3EC-493F-9C80-F997369AE278}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeSheet", "TimeSheet\TimeSheet.csproj", "{24B16A67-B3EC-493F-9C80-F997369AE278}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeSheet.DAL.Contracts", "TimeSheet.DAL.Contracts\TimeSheet.DAL.Contracts.csproj", "{1FADE3D1-9C1A-4E0A-837B-F187F3002787}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeSheet.DAL.Entities", "TimeSheet.DAL.Entities\TimeSheet.DAL.Entities.csproj", "{0C0170A2-3CE0-470C-9284-5E1F8B179391}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeSheet.DAL.SQLClient", "TimeSheet.DAL.SQLClient\TimeSheet.DAL.SQLClient.csproj", "{D6C56090-CDA3-4D0D-9B32-AE8B6E46049E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeSheet.Business.Contracts", "TimeSheet.Business.Contracts\TimeSheet.Business.Contracts.csproj", "{FE03854C-6C4B-472A-BBA0-DD59FB0A87D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeSheet.Business", "TimeSheet.Business\TimeSheet.Business.csproj", "{4EAD0EFB-ECCA-44A6-8A39-77F197098E72}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +25,26 @@ Global
 		{24B16A67-B3EC-493F-9C80-F997369AE278}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24B16A67-B3EC-493F-9C80-F997369AE278}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24B16A67-B3EC-493F-9C80-F997369AE278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1FADE3D1-9C1A-4E0A-837B-F187F3002787}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1FADE3D1-9C1A-4E0A-837B-F187F3002787}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1FADE3D1-9C1A-4E0A-837B-F187F3002787}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1FADE3D1-9C1A-4E0A-837B-F187F3002787}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C0170A2-3CE0-470C-9284-5E1F8B179391}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C0170A2-3CE0-470C-9284-5E1F8B179391}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C0170A2-3CE0-470C-9284-5E1F8B179391}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C0170A2-3CE0-470C-9284-5E1F8B179391}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6C56090-CDA3-4D0D-9B32-AE8B6E46049E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6C56090-CDA3-4D0D-9B32-AE8B6E46049E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6C56090-CDA3-4D0D-9B32-AE8B6E46049E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6C56090-CDA3-4D0D-9B32-AE8B6E46049E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE03854C-6C4B-472A-BBA0-DD59FB0A87D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE03854C-6C4B-472A-BBA0-DD59FB0A87D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE03854C-6C4B-472A-BBA0-DD59FB0A87D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE03854C-6C4B-472A-BBA0-DD59FB0A87D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EAD0EFB-ECCA-44A6-8A39-77F197098E72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EAD0EFB-ECCA-44A6-8A39-77F197098E72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EAD0EFB-ECCA-44A6-8A39-77F197098E72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EAD0EFB-ECCA-44A6-8A39-77F197098E72}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

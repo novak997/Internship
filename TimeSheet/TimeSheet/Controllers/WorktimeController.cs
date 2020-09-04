@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using TimeSheet.Controllers.DTO;
-using TimeSheet.Models;
-using TimeSheet.Repositories;
-using TimeSheet.Services;
+using Newtonsoft.Json.Linq;
+using TimeSheet.Business.Services;
+using TimeSheet.DAL.Entities;
 
 namespace TimeSheet.Controllers
 {
@@ -32,9 +31,10 @@ namespace TimeSheet.Controllers
         }
 
         [HttpPost("filter")]
-        public JsonResult FilterReports([FromBody] WorktimeFilterDTO worktimeFilterDTO)
+        public JsonResult FilterReports([FromBody] JObject dto)
         {
-            return Json(_worktimeService.FilterReports(worktimeFilterDTO));
+            return Json(_worktimeService.FilterReports(Convert.ToInt32(dto["user"]), Convert.ToInt32(dto["client"]), Convert.ToInt32(dto["project"]), Convert.ToInt32(dto["category"]), 
+                Convert.ToDateTime(dto["startDate"]), Convert.ToDateTime(dto["endDate"])));
         }
     }
 }

@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using TimeSheet.Controllers.DTO;
-using TimeSheet.Models;
-using TimeSheet.Repositories;
-using TimeSheet.Services;
+using Newtonsoft.Json.Linq;
+using TimeSheet.Business.Services;
+using TimeSheet.DAL.Entities;
 
 namespace TimeSheet.Controllers
 {
@@ -26,21 +25,21 @@ namespace TimeSheet.Controllers
         }
 
         [HttpPut("resetpassword")]
-        public JsonResult ResetPassword([FromBody] ChangePasswordDTO changePasswordDTO)
+        public JsonResult ResetPassword([FromBody] JObject dto)
         {
-            return Json(_userService.ResetPassword(changePasswordDTO));
+            return Json(_userService.ResetPassword(dto["oldPassword"].ToString(), dto["newPassword"].ToString(), dto["newPasswordConfirm"].ToString(), Convert.ToInt32(dto["id"])));
         }
 
         [HttpPut("setpassword")]
-        public JsonResult SetPassword([FromBody] SetPasswordDTO setPasswordDTO)
+        public JsonResult SetPassword([FromBody] JObject dto)
         {
-            return Json(_userService.SetPassword(setPasswordDTO));
+            return Json(_userService.SetPassword(dto["password"].ToString(), Convert.ToInt32(dto["id"])));
         }
 
         [HttpPut("{id}")]
-        public void DeleteUserLogically(int id)
+        public JsonResult DeleteUserLogically(int id)
         {
-            _userService.DeleteUserLogically(id);
+            return Json(_userService.DeleteUserLogically(id));
         }
 
         [HttpGet]

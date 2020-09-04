@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using TimeSheet.Models;
-using TimeSheet.Repositories;
-using TimeSheet.Services;
+using TimeSheet.Business.Services;
+using TimeSheet.DAL.Entities;
 
 namespace TimeSheet.Controllers
 {
@@ -25,9 +24,9 @@ namespace TimeSheet.Controllers
         }
 
         [HttpPut("{id}")]
-        public void DeleteClientLogically(int id)
+        public JsonResult DeleteClientLogically(int id)
         {
-            _clientService.DeleteClientLogically(id);
+            return Json(_clientService.DeleteClientLogically(id));
         }
 
         [HttpGet]

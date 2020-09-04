@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TimeSheet.Business.Contracts\TimeSheet.Business.Contracts.csproj" />
+    <ProjectReference Include="..\TimeSheet.DAL.SQLClient\TimeSheet.DAL.SQLClient.csproj" />
+  </ItemGroup>
+
+</Project>
