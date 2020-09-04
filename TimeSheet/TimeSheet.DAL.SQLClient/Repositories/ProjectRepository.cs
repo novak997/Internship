@@ -2,190 +2,270 @@
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using TimeSheet.DAL.Contracts.Repositories;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 
 namespace TimeSheet.DAL.SQLClient.Repositories
 {
     public class ProjectRepository : IProjectRepository
     {
-        private readonly string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=timesheet;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        private readonly IConfiguration _configuration;
 
-        public void AddProject(Project project)
+        public ProjectRepository(IConfiguration configuration)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspAddProject", connection)
+            _configuration = configuration;
+        }
+        public int AddProject(Project project)
+        {
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", project.Name);
-            command.Parameters.AddWithValue("@description", project.Description);
-            command.Parameters.AddWithValue("@client", project.ClientID);
-            command.Parameters.AddWithValue("@lead", project.LeadID);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspAddProject", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@name", project.Name);
+                command.Parameters.AddWithValue("@description", project.Description);
+                command.Parameters.AddWithValue("@client", project.ClientID);
+                command.Parameters.AddWithValue("@lead", project.LeadID);
+                command.Parameters.Add("@newId", SqlDbType.Int).Direction = ParameterDirection.Output;
+                command.ExecuteNonQuery();
+                return (Convert.ToInt32(command.Parameters["@newId"].Value));
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public void DeleteProjectLogically(int id)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspDeleteProjectLogically", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@id", id);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspDeleteProjectLogically", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public void DeleteProjectPhysically(int id)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspDeleteProjectPhysically", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@id", id);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspDeleteProjectPhysically", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public IEnumerable<Project> GetAllProjects()
         {
-            List<Project> projects = new List<Project>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetAllProjects", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Project project = new Project()
+                List<Project> projects = new List<Project>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetAllProjects", connection)
                 {
-                    ID = Convert.ToInt32(reader["id"]),
-                    Name = reader["name"].ToString(),
-                    Description = reader["description"].ToString(),
-                    Status = reader["status"].ToString(),
-                    ClientID = Convert.ToInt32(reader["client"]),
-                    LeadID = Convert.ToInt32(reader["lead"]),
-                    IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    CommandType = CommandType.StoredProcedure
                 };
-                projects.Add(project);
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Project project = new Project()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Name = reader["name"].ToString(),
+                        Description = reader["description"].ToString(),
+                        Status = reader["status"].ToString(),
+                        ClientID = Convert.ToInt32(reader["client"]),
+                        LeadID = Convert.ToInt32(reader["lead"]),
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    };
+                    projects.Add(project);
+                }
+                return projects;
             }
-            return projects;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public Project GetProjectById(int id)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetProjectById", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-            Project project = new Project();
-            while (reader.Read())
-            {
-                project.ID = Convert.ToInt32(reader["id"]);
-                project.Name = reader["name"].ToString();
-                project.Description = reader["description"].ToString();
-                project.Status = reader["status"].ToString();
-                project.ClientID = Convert.ToInt32(reader["client"]);
-                project.LeadID = Convert.ToInt32(reader["lead"]);
-                project.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetProjectById", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+                Project project = new Project();
+                while (reader.Read())
+                {
+                    project.ID = Convert.ToInt32(reader["id"]);
+                    project.Name = reader["name"].ToString();
+                    project.Description = reader["description"].ToString();
+                    project.Status = reader["status"].ToString();
+                    project.ClientID = Convert.ToInt32(reader["client"]);
+                    project.LeadID = Convert.ToInt32(reader["lead"]);
+                    project.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+                }
+                return project;
             }
-            return project;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
         
         public IEnumerable<string> GetProjectsFirstLetters()
         {
-            List<string> letters = new List<string>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("uspGetProjectsFirstLetters", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                letters.Add(reader["letter"].ToString());
+                List<string> letters = new List<string>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("uspGetProjectsFirstLetters", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    letters.Add(reader["letter"].ToString());
+                }
+                return letters;
             }
-            return letters;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
         
         public IEnumerable<Project> SearchProjects(string name)
         {
-            List<Project> projects = new List<Project>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspSearchProjects", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", name);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Project project = new Project()
+                List<Project> projects = new List<Project>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspSearchProjects", connection)
                 {
-                    ID = Convert.ToInt32(reader["id"]),
-                    Name = reader["name"].ToString(),
-                    Description = reader["description"].ToString(),
-                    Status = reader["status"].ToString(),
-                    ClientID = Convert.ToInt32(reader["client"]),
-                    LeadID = Convert.ToInt32(reader["lead"]),
-                    IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    CommandType = CommandType.StoredProcedure
                 };
-                projects.Add(project);
+                connection.Open();
+                command.Parameters.AddWithValue("@name", name);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Project project = new Project()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Name = reader["name"].ToString(),
+                        Description = reader["description"].ToString(),
+                        Status = reader["status"].ToString(),
+                        ClientID = Convert.ToInt32(reader["client"]),
+                        LeadID = Convert.ToInt32(reader["lead"]),
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    };
+                    projects.Add(project);
+                }
+                return projects;
             }
-            return projects;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public void UpdateProject(Project project)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspUpdateProject", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", project.Name);
-            command.Parameters.AddWithValue("@description", project.Description);
-            command.Parameters.AddWithValue("@client", project.ClientID);
-            command.Parameters.AddWithValue("@lead", project.LeadID);
-            command.Parameters.AddWithValue("@status", project.Status);
-            command.Parameters.AddWithValue("@id", project.ID);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspUpdateProject", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@name", project.Name);
+                command.Parameters.AddWithValue("@description", project.Description);
+                command.Parameters.AddWithValue("@client", project.ClientID);
+                command.Parameters.AddWithValue("@lead", project.LeadID);
+                command.Parameters.AddWithValue("@status", project.Status);
+                command.Parameters.AddWithValue("@id", project.ID);
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public Project GetProjectByNameAndClient(string name, int client)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetProjectByNameAndClient", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", name);
-            command.Parameters.AddWithValue("@client", client);
-            SqlDataReader reader = command.ExecuteReader();
-            Project project = new Project();
-            while (reader.Read())
-            {
-                project.ID = Convert.ToInt32(reader["id"]);
-                project.Name = reader["name"].ToString();
-                project.Description = reader["description"].ToString();
-                project.Status = reader["status"].ToString();
-                project.ClientID = Convert.ToInt32(reader["client"]);
-                project.LeadID = Convert.ToInt32(reader["lead"]);
-                project.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetProjectByNameAndClient", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@name", name);
+                command.Parameters.AddWithValue("@client", client);
+                SqlDataReader reader = command.ExecuteReader();
+                Project project = new Project();
+                while (reader.Read())
+                {
+                    project.ID = Convert.ToInt32(reader["id"]);
+                    project.Name = reader["name"].ToString();
+                    project.Description = reader["description"].ToString();
+                    project.Status = reader["status"].ToString();
+                    project.ClientID = Convert.ToInt32(reader["client"]);
+                    project.LeadID = Convert.ToInt32(reader["lead"]);
+                    project.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+                }
+                return project;
             }
-            return project;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
     }
 }

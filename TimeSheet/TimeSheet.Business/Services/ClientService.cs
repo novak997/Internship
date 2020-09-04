@@ -3,60 +3,124 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TimeSheet.Business.Contracts.Services;
+using TimeSheet.Business.Exceptions;
+using TimeSheet.DAL.Contracts.Repositories;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 using TimeSheet.DAL.SQLClient.Repositories;
 
 namespace TimeSheet.Business.Services
 {
     public class ClientService : IClientService
     {
-        private readonly ClientRepository _clientRepository = new ClientRepository();
+        private readonly IClientRepository _clientRepository;
+
+        public ClientService(IClientRepository clientRepository)
+        {
+            _clientRepository = clientRepository;
+        }
         public string AddClient(Client client)
         {
-            if (client.Name == "" || client.Name == null || client.Address == "" || client.Address == null || client.City == "" || client.City == null || client.Zip == "" || client.Zip == null)
+            try
             {
-                return "Client name, address, city and zip cannot be empty";
+                if (client.Name == "" || client.Name == null || client.Address == "" || client.Address == null || client.City == "" || client.City == null || client.Zip == "" || client.Zip == null)
+                {
+                    throw new BusinessLayerException("Client name, address, city and zip cannot be empty");
+                }
+                if (_clientRepository.GetClientByNameAndAddress(client.Name, client.Address).Name != null)
+                {
+                    throw new BusinessLayerException("A client with that name and address already exists");
+                }
+                _clientRepository.AddClient(client);
+                return "Client successfully added";
             }
-            if (_clientRepository.GetClientByNameAndAddress(client.Name, client.Address).Name != null)
+            catch (DatabaseException ex)
             {
-                return "A client with that name and address already exists";
+                throw ex;
             }
-            _clientRepository.AddClient(client);
-            return "Client successfully added";
+            
         }
         public IEnumerable<Client> GetAllClients()
         {
-            return _clientRepository.GetAllClients();
+            try
+            {
+                return _clientRepository.GetAllClients();
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+            
         }
         public Client GetClientById(int id)
         {
-            return _clientRepository.GetClientById(id);
+            try
+            {
+                return _clientRepository.GetClientById(id);
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+            
         }
         public string UpdateClient(Client client)
         {
-            if (client.Name == "" || client.Name == null || client.Address == "" || client.Address == null || client.City == "" || client.City == null || client.Zip == "" || client.Zip == null)
+            try
             {
-                return "Client name, address, city and zip cannot be empty";
+                if (client.Name == "" || client.Name == null || client.Address == "" || client.Address == null || client.City == "" || client.City == null || client.Zip == "" || client.Zip == null)
+                {
+                    throw new BusinessLayerException("Client name, address, city and zip cannot be empty");
+                }
+                if (_clientRepository.GetClientByNameAndAddress(client.Name, client.Address).Name != null)
+                {
+                    throw new BusinessLayerException("A client with that name and address already exists");
+                }
+                _clientRepository.UpdateClient(client);
+                return "Client successfully updated";
             }
-            if (_clientRepository.GetClientByNameAndAddress(client.Name, client.Address).Name != null)
+            catch (DatabaseException ex)
             {
-                return "A client with that name and address already exists";
+                throw ex;
             }
-            _clientRepository.UpdateClient(client);
-            return "Client successfully updated";
+            
         }
         public string DeleteClientLogically(int id)
         {
-            _clientRepository.DeleteClientLogically(id);
-            return "Client successfully deleted";
+            try
+            {
+                _clientRepository.DeleteClientLogically(id);
+                return "Client successfully deleted";
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+            
         }
         public IEnumerable<Client> SearchClients(string name)
         {
-            return _clientRepository.SearchClients(name);
+            try
+            {
+                return _clientRepository.SearchClients(name);
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+            
         }
         public IEnumerable<string> GetClientsFirstLetters()
         {
-            return _clientRepository.GetClientsFirstLetters();
+            try
+            {
+                return _clientRepository.GetClientsFirstLetters();
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+            
         }
     }
 }

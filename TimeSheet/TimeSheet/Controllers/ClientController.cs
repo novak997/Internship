@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using TimeSheet.Business.Contracts.Services;
 using TimeSheet.Business.Services;
 using TimeSheet.DAL.Entities;
 
@@ -11,7 +12,12 @@ namespace TimeSheet.Controllers
     [Route("api/[controller]")]
     public class ClientController : Controller
     {
-        private readonly ClientService _clientService = new ClientService();
+        private readonly IClientService _clientService;
+
+        public ClientController(IClientService clientService)
+        {
+            _clientService = clientService;
+        }
         public IActionResult Index()
         {
             return View();
@@ -20,43 +26,99 @@ namespace TimeSheet.Controllers
         [HttpPost]
         public JsonResult AddClient([FromBody] Client client)
         {
-            return Json(_clientService.AddClient(client));
+            try
+            {
+                return Json(_clientService.AddClient(client));
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
+            
         }
 
         [HttpPut("{id}")]
         public JsonResult DeleteClientLogically(int id)
         {
-            return Json(_clientService.DeleteClientLogically(id));
+            try
+            {
+                return Json(_clientService.DeleteClientLogically(id));
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
+            
         }
 
         [HttpGet]
         public JsonResult GetAllClients()
         {
-            return Json(_clientService.GetAllClients());
+            try
+            {
+                return Json(_clientService.GetAllClients());
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
+            
         }
 
         [HttpGet("{id}")]
         public JsonResult GetClientById(int id)
         {
-            return Json(_clientService.GetClientById(id));
+            try
+            {
+                return Json(_clientService.GetClientById(id));
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
+            
         }
 
         [HttpGet("letters")]
         public JsonResult GetClientsFirstLetters()
         {
-            return Json(_clientService.GetClientsFirstLetters());
+            try
+            {
+                return Json(_clientService.GetClientsFirstLetters());
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
+            
         }
 
         [HttpPost("{name}")]
         public JsonResult SearchClients([FromBody] string name)
         {
-            return Json(_clientService.SearchClients(name));
+            try
+            {
+                return Json(_clientService.SearchClients(name));
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
+            
         }
 
         [HttpPut]
         public JsonResult UpdateClient([FromBody] Client client)
         {
-            return Json(_clientService.UpdateClient(client));
+            try
+            {
+                return Json(_clientService.UpdateClient(client));
+            }
+            catch (Exception ex)
+            {
+                return Json(ex.Message);
+            }
+            
         }
     }
 }

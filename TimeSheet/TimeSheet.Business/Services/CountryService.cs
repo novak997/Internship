@@ -4,40 +4,72 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using TimeSheet.Business.Contracts.Services;
+using TimeSheet.Business.Exceptions;
+using TimeSheet.DAL.Contracts.Repositories;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 using TimeSheet.DAL.SQLClient.Repositories;
 
 namespace TimeSheet.Business.Services
 {
     public class CountryService : ICountryService
     {
-        private readonly CountryRepository _countryRepository = new CountryRepository();
+        private readonly ICountryRepository _countryRepository;
+
+        public CountryService(ICountryRepository countryRepository)
+        {
+            _countryRepository = countryRepository;
+        }
 
         public string AddCountry(Country country)
         {
-            if (country.Name == "" || country.Name == null || country.Short == "" || country.Short == null)
+            try
             {
-                return "Country name and short name cannot be empty";
+                if (country.Name == "" || country.Name == null || country.Short == "" || country.Short == null)
+                {
+                    throw new BusinessLayerException("Country name and short name cannot be empty");
+                }
+                if (_countryRepository.GetCountryByName(country.Name).Name != null)
+                {
+                    throw new BusinessLayerException("Country name taken");
+                }
+                if (_countryRepository.GetCountryByShort(country.Short).Name != null)
+                {
+                    throw new BusinessLayerException("Country short name taken");
+                }
+                _countryRepository.AddCountry(country);
+                return "Country successfully added";
             }
-            if (_countryRepository.GetCountryByName(country.Name).Name != null)
+            catch (DatabaseException ex)
             {
-                return "Country name taken";
+                throw ex;
             }
-            if (_countryRepository.GetCountryByShort(country.Short).Name != null) 
-            {
-                return "Country short name taken";
-            }
-            _countryRepository.AddCountry(country);
-            return "Country successfully added";
+            
         }
 
         public IEnumerable<Country> GetAllCountries()
         {
-            return _countryRepository.GetAllCountries();
+            try
+            {
+                return _countryRepository.GetAllCountries();
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+            
         }
         public Country GetCountryById(int id)
         {
-            return _countryRepository.GetCountryById(id);
+            try
+            {
+                return _countryRepository.GetCountryById(id);
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+            
         }
     }
 }

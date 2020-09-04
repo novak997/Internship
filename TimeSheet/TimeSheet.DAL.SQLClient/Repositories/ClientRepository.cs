@@ -2,191 +2,271 @@
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using TimeSheet.DAL.Contracts.Repositories;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 
 namespace TimeSheet.DAL.SQLClient.Repositories
 {
     public class ClientRepository : IClientRepository
     {
-        private readonly string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=timesheet;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        private readonly IConfiguration _configuration;
 
-        public void AddClient(Client client)
+        public ClientRepository(IConfiguration configuration)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspAddClient", connection)
+            _configuration = configuration;
+        }
+        public int AddClient(Client client)
+        {
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", client.Name);
-            command.Parameters.AddWithValue("@address", client.Address);
-            command.Parameters.AddWithValue("@city", client.City);
-            command.Parameters.AddWithValue("@zip", client.Zip);
-            command.Parameters.AddWithValue("@country", client.CountryID);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspAddClient", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@name", client.Name);
+                command.Parameters.AddWithValue("@address", client.Address);
+                command.Parameters.AddWithValue("@city", client.City);
+                command.Parameters.AddWithValue("@zip", client.Zip);
+                command.Parameters.AddWithValue("@country", client.CountryID);
+                command.Parameters.Add("@newId", SqlDbType.Int).Direction = ParameterDirection.Output;
+                command.ExecuteNonQuery();
+                return (Convert.ToInt32(command.Parameters["@newId"].Value));
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public void DeleteClientLogically(int id)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspDeleteClientLogically", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@id", id);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspDeleteClientLogically", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public void DeleteClientPhysically(int id)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspDeleteClientPhysically", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@id", id);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspDeleteClientPhysically", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public IEnumerable<Client> GetAllClients()
         {
-            List<Client> clients = new List<Client>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetAllClients", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Client client = new Client()
+                List<Client> clients = new List<Client>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetAllClients", connection)
                 {
-                    ID = Convert.ToInt32(reader["id"]),
-                    Name = reader["name"].ToString(),
-                    Address = reader["address"].ToString(),
-                    City = reader["city"].ToString(),
-                    Zip = reader["zip"].ToString(),
-                    CountryID = Convert.ToInt32(reader["countryID"]),
-                    IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    CommandType = CommandType.StoredProcedure
                 };
-                clients.Add(client);
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Client client = new Client()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Name = reader["name"].ToString(),
+                        Address = reader["address"].ToString(),
+                        City = reader["city"].ToString(),
+                        Zip = reader["zip"].ToString(),
+                        CountryID = Convert.ToInt32(reader["countryID"]),
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    };
+                    clients.Add(client);
+                }
+                return clients;
             }
-            return clients;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public Client GetClientById(int id)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetClientById", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-            Client client = new Client();
-            while (reader.Read())
-            {
-                client.ID = Convert.ToInt32(reader["id"]);
-                client.Name = reader["name"].ToString();
-                client.Address = reader["address"].ToString();
-                client.City = reader["city"].ToString();
-                client.Zip = reader["zip"].ToString();
-                client.CountryID = Convert.ToInt32(reader["countryID"]);
-                client.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetClientById", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+                Client client = new Client();
+                while (reader.Read())
+                {
+                    client.ID = Convert.ToInt32(reader["id"]);
+                    client.Name = reader["name"].ToString();
+                    client.Address = reader["address"].ToString();
+                    client.City = reader["city"].ToString();
+                    client.Zip = reader["zip"].ToString();
+                    client.CountryID = Convert.ToInt32(reader["countryID"]);
+                    client.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+                }
+                return client;
             }
-            return client;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
         
         public IEnumerable<string> GetClientsFirstLetters()
         {
-            List<string> letters = new List<string>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("uspGetClientsFirstLetters", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                letters.Add(reader["letter"].ToString());
+                List<string> letters = new List<string>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("uspGetClientsFirstLetters", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    letters.Add(reader["letter"].ToString());
+                }
+                return letters;
             }
-            return letters;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
         
         public IEnumerable<Client> SearchClients(string name)
         {
-            List<Client> clients = new List<Client>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspSearchClients", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", name);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Client client = new Client()
+                List<Client> clients = new List<Client>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspSearchClients", connection)
                 {
-                    ID = Convert.ToInt32(reader["id"]),
-                    Name = reader["name"].ToString(),
-                    Address = reader["address"].ToString(),
-                    City = reader["city"].ToString(),
-                    Zip = reader["zip"].ToString(),
-                    CountryID = Convert.ToInt32(reader["countryID"]),
-                    IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    CommandType = CommandType.StoredProcedure
                 };
-                clients.Add(client);
+                connection.Open();
+                command.Parameters.AddWithValue("@name", name);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Client client = new Client()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Name = reader["name"].ToString(),
+                        Address = reader["address"].ToString(),
+                        City = reader["city"].ToString(),
+                        Zip = reader["zip"].ToString(),
+                        CountryID = Convert.ToInt32(reader["countryID"]),
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    };
+                    clients.Add(client);
+                }
+                return clients;
             }
-            return clients;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public void UpdateClient(Client client)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspUpdateClient", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", client.Name);
-            command.Parameters.AddWithValue("@address", client.Address);
-            command.Parameters.AddWithValue("@city", client.City);
-            command.Parameters.AddWithValue("@zip", client.Zip);
-            command.Parameters.AddWithValue("@country", client.CountryID);
-            command.Parameters.AddWithValue("@id", client.ID);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspUpdateClient", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@name", client.Name);
+                command.Parameters.AddWithValue("@address", client.Address);
+                command.Parameters.AddWithValue("@city", client.City);
+                command.Parameters.AddWithValue("@zip", client.Zip);
+                command.Parameters.AddWithValue("@country", client.CountryID);
+                command.Parameters.AddWithValue("@id", client.ID);
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public Client GetClientByNameAndAddress(string name, string address)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetClientByNameAndAddress", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", name);
-            command.Parameters.AddWithValue("@address", address);
-            SqlDataReader reader = command.ExecuteReader();
-            Client client = new Client();
-            while (reader.Read())
-            {
-                client.ID = Convert.ToInt32(reader["id"]);
-                client.Name = reader["name"].ToString();
-                client.Address = reader["address"].ToString();
-                client.City = reader["city"].ToString();
-                client.Zip = reader["zip"].ToString();
-                client.CountryID = Convert.ToInt32(reader["countryID"]);
-                client.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetClientByNameAndAddress", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@name", name);
+                command.Parameters.AddWithValue("@address", address);
+                SqlDataReader reader = command.ExecuteReader();
+                Client client = new Client();
+                while (reader.Read())
+                {
+                    client.ID = Convert.ToInt32(reader["id"]);
+                    client.Name = reader["name"].ToString();
+                    client.Address = reader["address"].ToString();
+                    client.City = reader["city"].ToString();
+                    client.Zip = reader["zip"].ToString();
+                    client.CountryID = Convert.ToInt32(reader["countryID"]);
+                    client.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
+                }
+                return client;
             }
-            return client;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
     }
 }

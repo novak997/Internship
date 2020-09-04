@@ -8,7 +8,7 @@ namespace TimeSheet.DAL.Contracts.Repositories
 {
     public interface IClientRepository
     {
-        public void AddClient(Client client);
+        public int AddClient(Client client);
         public IEnumerable<Client> GetAllClients();
         public Client GetClientById(int id);
         public void UpdateClient(Client client);

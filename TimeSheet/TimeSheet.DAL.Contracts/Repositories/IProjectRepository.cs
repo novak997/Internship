@@ -8,7 +8,7 @@ namespace TimeSheet.DAL.Contracts.Repositories
 {
     public interface IProjectRepository
     {
-        public void AddProject(Project project);
+        public int AddProject(Project project);
         public IEnumerable<Project> GetAllProjects();
         public Project GetProjectById(int id);
         public void UpdateProject(Project project);

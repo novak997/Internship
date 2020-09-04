@@ -6,106 +6,154 @@ using Microsoft.IdentityModel.Protocols;
 using System.Configuration;
 using TimeSheet.DAL.Contracts.Repositories;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
+using Microsoft.Extensions.Configuration;
 
 namespace TimeSheet.DAL.SQLClient.Repositories
 {
     public class CountryRepository : ICountryRepository
     {
-        //private readonly string conString = Microsoft.Extensions.Configuration.ConfigurationExtensions.GetConnectionString(this.Configuration, "Database");
-        private readonly string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=timesheet;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-        public void AddCountry(Country country)
+        private readonly IConfiguration _configuration;
+
+        public CountryRepository(IConfiguration configuration)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspAddCountry", connection)
+            _configuration = configuration;
+        }
+        public int AddCountry(Country country)
+        {
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", country.Name);
-            command.Parameters.AddWithValue("@short", country.Short);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspAddCountry", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@name", country.Name);
+                command.Parameters.AddWithValue("@short", country.Short);
+                command.Parameters.Add("@newId", SqlDbType.Int).Direction = ParameterDirection.Output;
+                command.ExecuteNonQuery();
+                return (Convert.ToInt32(command.Parameters["@newId"].Value));
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
         public IEnumerable<Country> GetAllCountries()
         {
-            List<Country> countries = new List<Country>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetAllCountries", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Country country = new Country()
+                List<Country> countries = new List<Country>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetAllCountries", connection)
                 {
-                    ID = Convert.ToInt32(reader["id"]),
-                    Name = reader["name"].ToString(),
-                    Short = reader["short"].ToString()
+                    CommandType = CommandType.StoredProcedure
                 };
-                countries.Add(country);
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Country country = new Country()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Name = reader["name"].ToString(),
+                        Short = reader["short"].ToString()
+                    };
+                    countries.Add(country);
+                }
+                return countries;
             }
-            return countries;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public Country GetCountryById(int id)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetCountryById", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-            Country country = new Country();
-            while (reader.Read())
-            {
-                country.ID = Convert.ToInt32(reader["id"]);
-                country.Name = reader["name"].ToString();
-                country.Short = reader["short"].ToString();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetCountryById", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+                Country country = new Country();
+                while (reader.Read())
+                {
+                    country.ID = Convert.ToInt32(reader["id"]);
+                    country.Name = reader["name"].ToString();
+                    country.Short = reader["short"].ToString();
+                }
+                return country;
             }
-            return country;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public Country GetCountryByName(string name)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetCountryByName", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@name", name);
-            SqlDataReader reader = command.ExecuteReader();
-            Country country = new Country();
-            while (reader.Read())
-            {
-                country.ID = Convert.ToInt32(reader["id"]);
-                country.Name = reader["name"].ToString();
-                country.Short = reader["short"].ToString();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetCountryByName", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@name", name);
+                SqlDataReader reader = command.ExecuteReader();
+                Country country = new Country();
+                while (reader.Read())
+                {
+                    country.ID = Convert.ToInt32(reader["id"]);
+                    country.Name = reader["name"].ToString();
+                    country.Short = reader["short"].ToString();
+                }
+                return country;
             }
-            return country;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public Country GetCountryByShort(string shortName)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetCountryByShort", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@short", shortName);
-            SqlDataReader reader = command.ExecuteReader();
-            Country country = new Country();
-            while (reader.Read())
-            {
-                country.ID = Convert.ToInt32(reader["id"]);
-                country.Name = reader["name"].ToString();
-                country.Short = reader["short"].ToString();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetCountryByShort", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@short", shortName);
+                SqlDataReader reader = command.ExecuteReader();
+                Country country = new Country();
+                while (reader.Read())
+                {
+                    country.ID = Convert.ToInt32(reader["id"]);
+                    country.Name = reader["name"].ToString();
+                    country.Short = reader["short"].ToString();
+                }
+                return country;
             }
-            return country;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
     }
 }

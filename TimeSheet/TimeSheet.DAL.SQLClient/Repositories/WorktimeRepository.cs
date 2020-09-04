@@ -2,97 +2,129 @@
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using TimeSheet.DAL.Contracts.Repositories;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 
 namespace TimeSheet.DAL.SQLClient.Repositories
 {
     public class WorktimeRepository : IWorktimeRepository
     {
-        private readonly string _connectionString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=timesheet;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        private readonly IConfiguration _configuration;
 
-        public void AddWorktime(Worktime worktime)
+        public WorktimeRepository(IConfiguration configuration)
         {
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspAddWorktime", connection)
+            _configuration = configuration;
+        }
+        public int AddWorktime(Worktime worktime)
+        {
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@description", worktime.Description);
-            command.Parameters.AddWithValue("@hours", worktime.Hours);
-            command.Parameters.AddWithValue("@overtime", worktime.Overtime);
-            command.Parameters.AddWithValue("@date", worktime.Date);
-            command.Parameters.AddWithValue("@client", worktime.ClientID);
-            command.Parameters.AddWithValue("@project", worktime.ProjectID);
-            command.Parameters.AddWithValue("@category", worktime.CategoryID);
-            command.Parameters.AddWithValue("@user", worktime.UserID);
-            command.ExecuteNonQuery();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspAddWorktime", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@description", worktime.Description);
+                command.Parameters.AddWithValue("@hours", worktime.Hours);
+                command.Parameters.AddWithValue("@overtime", worktime.Overtime);
+                command.Parameters.AddWithValue("@date", worktime.Date);
+                command.Parameters.AddWithValue("@client", worktime.ClientID);
+                command.Parameters.AddWithValue("@project", worktime.ProjectID);
+                command.Parameters.AddWithValue("@category", worktime.CategoryID);
+                command.Parameters.AddWithValue("@user", worktime.UserID);
+                command.Parameters.Add("@newId", SqlDbType.Int).Direction = ParameterDirection.Output;
+                command.ExecuteNonQuery();
+                return (Convert.ToInt32(command.Parameters["@newId"].Value));
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public IEnumerable<Worktime> GetWorktimesForUser(int id)
         {
-            List<Worktime> worktimes = new List<Worktime>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetWorktimesForUser", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@id", id);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Worktime worktime = new Worktime()
+                List<Worktime> worktimes = new List<Worktime>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetWorktimesForUser", connection)
                 {
-                    ID = Convert.ToInt32(reader["id"]),
-                    Description = reader["description"].ToString(),
-                    Hours = Convert.ToDouble(reader["hours"]),
-                    Overtime = Convert.ToDouble(reader["overtime"]),
-                    Date = Convert.ToDateTime(reader["date"]),
-                    ClientID = Convert.ToInt32(reader["client"]),
-                    ProjectID = Convert.ToInt32(reader["project"]),
-                    CategoryID = Convert.ToInt32(reader["category"]),
-                    UserID = Convert.ToInt32(reader["user"]),
+                    CommandType = CommandType.StoredProcedure
                 };
-                worktimes.Add(worktime);
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Worktime worktime = new Worktime()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Description = reader["description"].ToString(),
+                        Hours = Convert.ToDouble(reader["hours"]),
+                        Overtime = Convert.ToDouble(reader["overtime"]),
+                        Date = Convert.ToDateTime(reader["date"]),
+                        ClientID = Convert.ToInt32(reader["client"]),
+                        ProjectID = Convert.ToInt32(reader["project"]),
+                        CategoryID = Convert.ToInt32(reader["category"]),
+                        UserID = Convert.ToInt32(reader["user"]),
+                    };
+                    worktimes.Add(worktime);
+                }
+                return worktimes;
             }
-            return worktimes;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
 
         public IEnumerable<Worktime> FilterReports(int user, int client, int project, int category, DateTime startDate, DateTime endDate)
         {
-            List<Worktime> worktimes = new List<Worktime>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
-            SqlCommand command = new SqlCommand("dbo.uspGetWorktimesForUser", connection)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            connection.Open();
-            command.Parameters.AddWithValue("@user", user);
-            command.Parameters.AddWithValue("@client", client);
-            command.Parameters.AddWithValue("@project", project);
-            command.Parameters.AddWithValue("@category", category);
-            command.Parameters.AddWithValue("@startDate", startDate);
-            command.Parameters.AddWithValue("@endDate", endDate);
-            SqlDataReader reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                Worktime worktime = new Worktime()
+                List<Worktime> worktimes = new List<Worktime>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetWorktimesForUser", connection)
                 {
-                    ID = Convert.ToInt32(reader["id"]),
-                    Description = reader["description"].ToString(),
-                    Hours = Convert.ToDouble(reader["hours"]),
-                    Overtime = Convert.ToDouble(reader["overtime"]),
-                    Date = Convert.ToDateTime(reader["date"]),
-                    ClientID = Convert.ToInt32(reader["client"]),
-                    ProjectID = Convert.ToInt32(reader["project"]),
-                    CategoryID = Convert.ToInt32(reader["category"]),
-                    UserID = Convert.ToInt32(reader["user"]),
+                    CommandType = CommandType.StoredProcedure
                 };
-                worktimes.Add(worktime);
+                connection.Open();
+                command.Parameters.AddWithValue("@user", user);
+                command.Parameters.AddWithValue("@client", client);
+                command.Parameters.AddWithValue("@project", project);
+                command.Parameters.AddWithValue("@category", category);
+                command.Parameters.AddWithValue("@startDate", startDate);
+                command.Parameters.AddWithValue("@endDate", endDate);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Worktime worktime = new Worktime()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Description = reader["description"].ToString(),
+                        Hours = Convert.ToDouble(reader["hours"]),
+                        Overtime = Convert.ToDouble(reader["overtime"]),
+                        Date = Convert.ToDateTime(reader["date"]),
+                        ClientID = Convert.ToInt32(reader["client"]),
+                        ProjectID = Convert.ToInt32(reader["project"]),
+                        CategoryID = Convert.ToInt32(reader["category"]),
+                        UserID = Convert.ToInt32(reader["user"]),
+                    };
+                    worktimes.Add(worktime);
+                }
+                return worktimes;
             }
-            return worktimes;
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
         }
     }
 }

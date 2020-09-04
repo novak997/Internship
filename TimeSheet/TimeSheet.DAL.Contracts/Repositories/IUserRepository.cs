@@ -8,7 +8,7 @@ namespace TimeSheet.DAL.Contracts.Repositories
 {
     public interface IUserRepository
     {
-        public void AddUser(User user);
+        public int AddUser(User user);
         public IEnumerable<User> GetAllUsers();
         public User GetUserById(int id);
         public void UpdateUser(User user);
