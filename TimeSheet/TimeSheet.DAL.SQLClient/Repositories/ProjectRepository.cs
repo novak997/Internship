@@ -174,7 +174,7 @@ namespace TimeSheet.DAL.SQLClient.Repositories
             
         }
         
-        public IEnumerable<Project> SearchProjects(string name)
+        public IEnumerable<Project> SearchProjects(string query)
         {
             try
             {
@@ -185,7 +185,7 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                     CommandType = CommandType.StoredProcedure
                 };
                 connection.Open();
-                command.Parameters.AddWithValue("@name", name);
+                command.Parameters.AddWithValue("@query", query);
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {

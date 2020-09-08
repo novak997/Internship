@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TimeSheet.Business.Exceptions
 {
-    class BusinessLayerException : Exception
+    public class BusinessLayerException : Exception
     {
         public BusinessLayerException()
         {

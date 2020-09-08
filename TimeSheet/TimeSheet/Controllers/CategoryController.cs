@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TimeSheet.Business.Contracts.Services;
+using TimeSheet.Business.Exceptions;
 using TimeSheet.Business.Services;
 using TimeSheet.DAL.Entities;
 using TimeSheet.DAL.SQLClient.Exceptions;
 
 namespace TimeSheet.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     public class CategoryController : Controller
     {
@@ -19,50 +22,58 @@ namespace TimeSheet.Controllers
         {
             _categoryService = categoryService;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         [HttpPost]
-        public JsonResult AddCategory([FromBody] Category category)
+        public IActionResult AddCategory([FromBody] Category category)
         {
             try
             {
-                return Json(_categoryService.AddCategory(category));
+                return Ok(_categoryService.AddCategory(category));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet]
-        public JsonResult GetAllCategories()
+        public IActionResult GetAllCategories()
         {
             try
             {
-                return Json(_categoryService.GetAllCategories());
+                return Ok(_categoryService.GetAllCategories());
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
         [HttpGet("{id}")]
-        public JsonResult GetCategoryById(int id)
+        public IActionResult GetCategoryById(int id)
         {
             try
             {
-                return Json(_categoryService.GetCategoryById(id));
+                return Ok(_categoryService.GetCategoryById(id));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

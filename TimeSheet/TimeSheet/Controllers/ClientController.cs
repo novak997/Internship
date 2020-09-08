@@ -2,13 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using TimeSheet.Business.Contracts.Services;
 using TimeSheet.Business.Services;
+using TimeSheet.Controllers.DTO;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
+using TimeSheet.Business.Exceptions;
 
 namespace TimeSheet.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     public class ClientController : Controller
     {
@@ -18,107 +24,131 @@ namespace TimeSheet.Controllers
         {
             _clientService = clientService;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         [HttpPost]
-        public JsonResult AddClient([FromBody] Client client)
+        public IActionResult AddClient([FromBody] Client client)
         {
             try
             {
-                return Json(_clientService.AddClient(client));
+                return Ok(_clientService.AddClient(client));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
             }
             
         }
 
         [HttpPut("{id}")]
-        public JsonResult DeleteClientLogically(int id)
+        public IActionResult DeleteClientLogically(int id)
         {
             try
             {
-                return Json(_clientService.DeleteClientLogically(id));
+                return Ok(_clientService.DeleteClientLogically(id));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet]
-        public JsonResult GetAllClients()
+        public IActionResult GetAllClients()
         {
             try
             {
-                return Json(_clientService.GetAllClients());
+                return Ok(_clientService.GetAllClients());
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet("{id}")]
-        public JsonResult GetClientById(int id)
+        public IActionResult GetClientById(int id)
         {
             try
             {
-                return Json(_clientService.GetClientById(id));
+                return Ok(_clientService.GetClientById(id));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet("letters")]
-        public JsonResult GetClientsFirstLetters()
+        public IActionResult GetClientsFirstLetters()
         {
             try
             {
-                return Json(_clientService.GetClientsFirstLetters());
+                return Ok(_clientService.GetClientsFirstLetters());
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
-        [HttpPost("{name}")]
-        public JsonResult SearchClients([FromBody] string name)
+        [HttpPost("search")]
+        public IActionResult SearchClients([FromBody] SearchDTO search)
         {
             try
             {
-                return Json(_clientService.SearchClients(name));
+                return Ok(_clientService.SearchClients(search.Name));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpPut]
-        public JsonResult UpdateClient([FromBody] Client client)
+        public IActionResult UpdateClient([FromBody] Client client)
         {
             try
             {
-                return Json(_clientService.UpdateClient(client));
+                return Ok(_clientService.UpdateClient(client));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

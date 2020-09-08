@@ -14,5 +14,6 @@ namespace TimeSheet.Business.Contracts.Services
         public string DeleteUserLogically(int id);
         public string ResetPassword(string oldPassword, string newPassword, string newPasswordConfirm, int id);
         public string SetPassword(string password, int id);
+        public User Login(string username, string password);
     }
 }

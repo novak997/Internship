@@ -175,10 +175,10 @@ namespace TimeSheet.DAL.SQLClient.Repositories
             
         }
         
-        public IEnumerable<Client> SearchClients(string name)
+        public IEnumerable<Client> SearchClients(string query)
         {
-            try
-            {
+            //try
+            //{
                 List<Client> clients = new List<Client>();
                 using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
                 SqlCommand command = new SqlCommand("dbo.uspSearchClients", connection)
@@ -186,7 +186,7 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                     CommandType = CommandType.StoredProcedure
                 };
                 connection.Open();
-                command.Parameters.AddWithValue("@name", name);
+                command.Parameters.AddWithValue("@query", query);
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
@@ -203,11 +203,11 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                     clients.Add(client);
                 }
                 return clients;
-            }
-            catch (SqlException)
-            {
-                throw new DatabaseException("A database related exception has occurred");
-            }
+            //}
+            //catch (SqlException)
+            //{
+             //   throw new DatabaseException("A database related exception has occurred");
+            //}
             
         }
 

@@ -2,14 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using TimeSheet.Business.Contracts.Services;
+using TimeSheet.Business.Exceptions;
 using TimeSheet.Business.Services;
+using TimeSheet.Controllers.DTO;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 
 namespace TimeSheet.Controllers
 {
+    [Authorize(Roles = "Admin, User")]
     [Route("api/[controller]")]
     public class WorktimeController : Controller
     {
@@ -19,52 +24,59 @@ namespace TimeSheet.Controllers
         {
             _worktimeService = worktimeService;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         [HttpPost]
-        public JsonResult AddWorktime([FromBody] Worktime worktime)
+        public IActionResult AddWorktime([FromBody] Worktime worktime)
         {
             try
             {
-                return Json(_worktimeService.AddWorktime(worktime));
+                return Ok(_worktimeService.AddWorktime(worktime));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet("id")]
-        public JsonResult GetWorktimesForUser(int id)
+        public IActionResult GetWorktimesForUser(int id)
         {
             try
             {
-                return Json(_worktimeService.GetWorktimesForUser(id));
+                return Ok(_worktimeService.GetWorktimesForUser(id));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpPost("filter")]
-        public JsonResult FilterReports([FromBody] JObject dto)
+        public IActionResult FilterReports([FromBody] FilterReportsDTO filterReports)
         {
             try
             {
-                return Json(_worktimeService.FilterReports(Convert.ToInt32(dto["user"]), Convert.ToInt32(dto["client"]), Convert.ToInt32(dto["project"]), Convert.ToInt32(dto["category"]),
-                Convert.ToDateTime(dto["startDate"]), Convert.ToDateTime(dto["endDate"])));
+                return Ok(_worktimeService.FilterReports(filterReports.UserID, filterReports.ClientID, filterReports.ProjectID, filterReports.CategoryID, filterReports.StartDate, filterReports.EndDate));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

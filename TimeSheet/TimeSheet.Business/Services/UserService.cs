@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using TimeSheet.Business.Contracts.Services;
@@ -93,7 +95,15 @@ namespace TimeSheet.Business.Services
         {
             try
             {
-                if (_userRepository.GetUserById(id).Password != oldPassword)
+                User user = _userRepository.GetUserById(id);
+                PasswordHasher<User> passwordHasher = new PasswordHasher<User>();
+                bool verified = false;
+                var result = passwordHasher.VerifyHashedPassword(user, user.Password, oldPassword);
+                if (result == PasswordVerificationResult.Success)
+                {
+                    verified = true;
+                }    
+                if (!verified)
                 {
                     throw new BusinessLayerException("Invalid old password");
                 }
@@ -101,7 +111,8 @@ namespace TimeSheet.Business.Services
                 {
                     throw new BusinessLayerException("Passwords do not match");
                 }
-                _userRepository.ChangePassword(newPassword, id);
+                string hashedNewPassword = passwordHasher.HashPassword(user, newPassword);
+                _userRepository.ChangePassword(hashedNewPassword, id);
                 return "Password successfully changed";
             }
             catch (DatabaseException ex)
@@ -114,7 +125,10 @@ namespace TimeSheet.Business.Services
         {
             try
             {
-                _userRepository.ChangePassword(password, id);
+                User user = _userRepository.GetUserById(id);
+                PasswordHasher<User> passwordHasher = new PasswordHasher<User>();
+                string hashedPassword = passwordHasher.HashPassword(user, password);
+                _userRepository.ChangePassword(hashedPassword, id);
                 return "Password successfully changed";
             }
             catch (DatabaseException ex)
@@ -135,6 +149,34 @@ namespace TimeSheet.Business.Services
                 throw ex;
             }
             
+        }
+
+        public User Login(string username, string password)
+        {
+            try
+            {
+                User user = _userRepository.GetUserByUsername(username);
+                if (user.Username == null)
+                {
+                    throw new BusinessLayerException("No such user exists");
+                }
+                PasswordHasher<User> passwordHasher = new PasswordHasher<User>();
+                bool verified = false;
+                var result = passwordHasher.VerifyHashedPassword(user, user.Password, password);
+                if (result == PasswordVerificationResult.Success)
+                {
+                    verified = true;
+                }
+                if (!verified)
+                {
+                    throw new BusinessLayerException("Incorrect password");
+                }
+                return user;
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
         }
     }
 }

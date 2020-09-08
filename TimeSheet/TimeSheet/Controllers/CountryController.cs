@@ -2,13 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TimeSheet.Business.Contracts.Services;
+using TimeSheet.Business.Exceptions;
 using TimeSheet.Business.Services;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 
 namespace TimeSheet.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     public class CountryController : Controller
     {
@@ -18,37 +22,41 @@ namespace TimeSheet.Controllers
         {
             _countryService = countryService;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         [HttpPost]
-        public JsonResult AddCountry([FromBody] Country country)
+        public IActionResult AddCountry([FromBody] Country country)
         {
             try
             {
-                return Json(_countryService.AddCountry(country));
+                return Ok(_countryService.AddCountry(country));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
         
         [HttpGet]
-        public JsonResult GetAllCountries()
+        public IActionResult GetAllCountries()
         {
             try
             {
-                return Json(_countryService.GetAllCountries());
+                return Ok(_countryService.GetAllCountries());
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
         
     }

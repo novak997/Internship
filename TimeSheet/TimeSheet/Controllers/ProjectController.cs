@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TimeSheet.Business.Contracts.Services;
+using TimeSheet.Business.Exceptions;
 using TimeSheet.Business.Services;
+using TimeSheet.Controllers.DTO;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 
 namespace TimeSheet.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     public class ProjectController : Controller
     {
@@ -18,107 +23,131 @@ namespace TimeSheet.Controllers
         {
             _projectService = projectService;
         }
-        public IActionResult Index()
-        {
-            return View();
-        }
 
         [HttpPost]
-        public JsonResult AddProject([FromBody] Project project)
+        public IActionResult AddProject([FromBody] Project project)
         {
             try
             {
-                return Json(_projectService.AddProject(project));
+                return Ok(_projectService.AddProject(project));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpPut("{id}")]
-        public JsonResult DeleteProjectLogically(int id)
+        public IActionResult DeleteProjectLogically(int id)
         {
             try
             {
-                return Json(_projectService.DeleteProjectLogically(id));
+                return Ok(_projectService.DeleteProjectLogically(id));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet]
-        public JsonResult GetAllProjects()
+        public IActionResult GetAllProjects()
         {
             try
             {
-                return Json(_projectService.GetAllProjects());
+                return Ok(_projectService.GetAllProjects());
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet("{id}")]
-        public JsonResult GetProjectById(int id)
+        public IActionResult GetProjectById(int id)
         {
             try
             {
-                return Json(_projectService.GetProjectById(id));
+                return Ok(_projectService.GetProjectById(id));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpGet("letters")]
-        public JsonResult GetProjectsFirstLetters()
+        public IActionResult GetProjectsFirstLetters()
         {
             try
             {
-                return Json(_projectService.GetProjectsFirstLetters());
+                return Ok(_projectService.GetProjectsFirstLetters());
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
-        [HttpPost("{name}")]
-        public JsonResult SearchProjects([FromBody] string name)
+        [HttpPost("search")]
+        public IActionResult SearchProjects([FromBody] SearchDTO search)
         {
             try
             {
-                return Json(_projectService.SearchProjects(name));
+                return Ok(_projectService.SearchProjects(search.Name));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpPut]
-        public JsonResult UpdateProject([FromBody] Project project)
+        public IActionResult UpdateProject([FromBody] Project project)
         {
             try
             {
-                return Json(_projectService.UpdateProject(project));
+                return Ok(_projectService.UpdateProject(project));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }

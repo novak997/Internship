@@ -1,125 +1,218 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using TimeSheet.Business.Contracts.Services;
+using TimeSheet.Business.Exceptions;
 using TimeSheet.Business.Services;
+using TimeSheet.Controllers.DTO;
 using TimeSheet.DAL.Entities;
+using TimeSheet.DAL.SQLClient.Exceptions;
 
 namespace TimeSheet.Controllers
 {
+    [Authorize(Roles = "Admin, User")]
     [Route("api/[controller]")]
     public class UserController : Controller
     {
         private readonly IUserService _userService;
+        private readonly IConfiguration _configuration;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
+            _configuration = configuration;
         }
-        public IActionResult Index()
+        
+        [AllowAnonymous]
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginDTO login)
         {
-            return View();
+            IActionResult response = Unauthorized();
+            var user = AuthenticateUser(login.Username, login.Password);
+
+            if (user != null)
+            {
+                var tokenString = GenerateJSONWebToken(user);
+                response = Ok(new { token = tokenString });
+            }
+
+            return response;
         }
 
+        private User AuthenticateUser(string username, string password)
+        {
+            return _userService.Login(username, password);
+        }
+
+        private string RoleName(bool isAdmin)
+        {
+            if (isAdmin)
+            {
+                return "Admin";
+            }
+            return "User";
+        }
+
+        private string GenerateJSONWebToken(User user)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[] {
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Role, RoleName(user.IsAdmin))
+            };
+
+            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
+                _configuration["Jwt:Issuer"],
+                claims,
+                expires: DateTime.Now.AddMinutes(120),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [AllowAnonymous]
         [HttpPost]
-        public JsonResult AddUser([FromBody] User user)
+        public IActionResult AddUser([FromBody] User user)
         {
             try
             {
-                return Json(_userService.AddUser(user));
+                return Ok(_userService.AddUser(user));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpPut("resetpassword")]
-        public JsonResult ResetPassword([FromBody] JObject dto)
+        public IActionResult ResetPassword([FromBody] ResetPasswordDTO resetPassword)
         {
             try
             {
-                return Json(_userService.ResetPassword(dto["oldPassword"].ToString(), dto["newPassword"].ToString(), dto["newPasswordConfirm"].ToString(), Convert.ToInt32(dto["id"])));
+                return Ok(_userService.ResetPassword(resetPassword.OldPassword, resetPassword.NewPassword, resetPassword.NewPasswordConfirm, resetPassword.ID));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
         [HttpPut("setpassword")]
-        public JsonResult SetPassword([FromBody] JObject dto)
+        public IActionResult SetPassword([FromBody] SetPasswordDTO setPassword)
         {
             try
             {
-                return Json(_userService.SetPassword(dto["password"].ToString(), Convert.ToInt32(dto["id"])));
+                return Ok(_userService.SetPassword(setPassword.Password, setPassword.ID));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public JsonResult DeleteUserLogically(int id)
+        public IActionResult DeleteUserLogically(int id)
         {
             try
             {
-                return Json(_userService.DeleteUserLogically(id));
+                return Ok(_userService.DeleteUserLogically(id));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet]
-        public JsonResult GetAllUsers()
+        public IActionResult GetAllUsers()
         {
             try
             {
-                return Json(_userService.GetAllUsers());
+                return Ok(_userService.GetAllUsers());
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
-        public JsonResult GetUserById(int id)
+        public IActionResult GetUserById(int id)
         {
             try
             {
-                return Json(_userService.GetUserById(id));
+                return Ok(_userService.GetUserById(id));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut]
-        public JsonResult UpdateUser([FromBody] User user)
+        public IActionResult UpdateUser([FromBody] User user)
         {
             try
             {
-                return Json(_userService.UpdateUser(user));
+                return Ok(_userService.UpdateUser(user));
             }
-            catch (Exception ex)
+            catch (DatabaseException)
             {
-                return Json(ex.Message);
+                return StatusCode(500);
             }
-            
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
     }
 }
