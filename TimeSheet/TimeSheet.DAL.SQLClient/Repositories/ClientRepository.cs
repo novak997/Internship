@@ -54,7 +54,13 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                 };
                 connection.Open();
                 command.Parameters.AddWithValue("@id", id);
+                command.Parameters.Add("@violation", SqlDbType.Bit).Direction = ParameterDirection.Output;
                 command.ExecuteNonQuery();
+                bool violation = (Convert.ToBoolean(command.Parameters["@violation"].Value));
+                if (violation)
+                {
+                    throw new DatabaseException("Optymistic concurrency violation encountered");
+                }
             }
             catch (SqlException)
             {
@@ -74,7 +80,13 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                 };
                 connection.Open();
                 command.Parameters.AddWithValue("@id", id);
+                command.Parameters.Add("@violation", SqlDbType.Bit).Direction = ParameterDirection.Output;
                 command.ExecuteNonQuery();
+                bool violation = (Convert.ToBoolean(command.Parameters["@violation"].Value));
+                if (violation)
+                {
+                    throw new DatabaseException("Optymistic concurrency violation encountered");
+                }
             }
             catch (SqlException)
             {
@@ -177,8 +189,8 @@ namespace TimeSheet.DAL.SQLClient.Repositories
         
         public IEnumerable<Client> SearchClients(string query)
         {
-            //try
-            //{
+            try
+            {
                 List<Client> clients = new List<Client>();
                 using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
                 SqlCommand command = new SqlCommand("dbo.uspSearchClients", connection)
@@ -203,11 +215,11 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                     clients.Add(client);
                 }
                 return clients;
-            //}
-            //catch (SqlException)
-            //{
-             //   throw new DatabaseException("A database related exception has occurred");
-            //}
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
             
         }
 
@@ -227,7 +239,13 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                 command.Parameters.AddWithValue("@zip", client.Zip);
                 command.Parameters.AddWithValue("@country", client.CountryID);
                 command.Parameters.AddWithValue("@id", client.ID);
+                command.Parameters.Add("@violation", SqlDbType.Bit).Direction = ParameterDirection.Output;
                 command.ExecuteNonQuery();
+                bool violation = (Convert.ToBoolean(command.Parameters["@violation"].Value));
+                if (violation)
+                {
+                    throw new DatabaseException("Optymistic concurrency violation encountered");
+                }
             }
             catch (SqlException)
             {
@@ -267,6 +285,65 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                 throw new DatabaseException("A database related exception has occurred");
             }
             
+        }
+
+        public int GetNumberOfClients()
+        {
+            try
+            {
+                int number = 0;
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetNumberOfClients", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    number = Convert.ToInt32(reader["number"]);
+                }
+                return number;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+        }
+        public IEnumerable<Client> GetClientsByPage(int page, int number)
+        {
+            try
+            {
+                List<Client> clients = new List<Client>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetClientsByPage", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@page", page);
+                command.Parameters.AddWithValue("@number", number);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Client client = new Client()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Name = reader["name"].ToString(),
+                        Address = reader["address"].ToString(),
+                        City = reader["city"].ToString(),
+                        Zip = reader["zip"].ToString(),
+                        CountryID = Convert.ToInt32(reader["countryID"]),
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    };
+                    clients.Add(client);
+                }
+                return clients;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
         }
     }
 }

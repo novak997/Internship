@@ -72,7 +72,8 @@ namespace TimeSheet.Business.Services
                 {
                     throw new BusinessLayerException("Client name, address, city and zip cannot be empty");
                 }
-                if (_clientRepository.GetClientByNameAndAddress(client.Name, client.Address).Name != null)
+                Client clientCheck = _clientRepository.GetClientByNameAndAddress(client.Name, client.Address);
+                if (clientCheck.Name != null && clientCheck.ID != client.ID)
                 {
                     throw new BusinessLayerException("A client with that name and address already exists");
                 }
@@ -121,6 +122,30 @@ namespace TimeSheet.Business.Services
                 throw ex;
             }
             
+        }
+
+        public int GetNumberOfClients()
+        {
+            try
+            {
+                return _clientRepository.GetNumberOfClients();
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+        }
+
+        public IEnumerable<Client> GetClientsByPage(int page, int number)
+        {
+            try
+            {
+                return _clientRepository.GetClientsByPage(page, number);
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
         }
     }
 }

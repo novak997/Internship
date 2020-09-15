@@ -25,64 +25,12 @@ namespace TimeSheet.Controllers
     public class UserController : Controller
     {
         private readonly IUserService _userService;
-        private readonly IConfiguration _configuration;
 
-        public UserController(IUserService userService, IConfiguration configuration)
+        public UserController(IUserService userService)
         {
             _userService = userService;
-            _configuration = configuration;
         }
         
-        [AllowAnonymous]
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginDTO login)
-        {
-            IActionResult response = Unauthorized();
-            var user = AuthenticateUser(login.Username, login.Password);
-
-            if (user != null)
-            {
-                var tokenString = GenerateJSONWebToken(user);
-                response = Ok(new { token = tokenString });
-            }
-
-            return response;
-        }
-
-        private User AuthenticateUser(string username, string password)
-        {
-            return _userService.Login(username, password);
-        }
-
-        private string RoleName(bool isAdmin)
-        {
-            if (isAdmin)
-            {
-                return "Admin";
-            }
-            return "User";
-        }
-
-        private string GenerateJSONWebToken(User user)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[] {
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Name),
-                new Claim(ClaimTypes.Role, RoleName(user.IsAdmin))
-            };
-
-            var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
-                _configuration["Jwt:Issuer"],
-                claims,
-                expires: DateTime.Now.AddMinutes(120),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
         [Authorize(Roles = "Admin")]
         [AllowAnonymous]
         [HttpPost]

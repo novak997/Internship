@@ -11,6 +11,7 @@ using TimeSheet.Controllers.DTO;
 using TimeSheet.DAL.Entities;
 using TimeSheet.DAL.SQLClient.Exceptions;
 using TimeSheet.Business.Exceptions;
+using System.Net.Sockets;
 
 namespace TimeSheet.Controllers
 {
@@ -139,6 +140,42 @@ namespace TimeSheet.Controllers
             try
             {
                 return Ok(_clientService.UpdateClient(client));
+            }
+            catch (DatabaseException)
+            {
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpGet("number")]
+        public IActionResult GetNumberOfClients()
+        {
+            try
+            {
+                return Ok(_clientService.GetNumberOfClients());
+            }
+            catch (DatabaseException)
+            {
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpGet("{page}/{number}")]
+        public IActionResult GetClientsByPage(int page, int number)
+        {
+            try
+            {
+                return Ok(_clientService.GetClientsByPage(page, number));
             }
             catch (DatabaseException)
             {

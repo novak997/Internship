@@ -23,9 +23,9 @@ namespace TimeSheet.Business.Services
         {
             try
             {
-                if (project.Name == "" || project.Name == null || project.Status == "" || project.Status == null)
+                if (project.Name == "" || project.Name == null)
                 {
-                    throw new BusinessLayerException("Project name and status cannot be empty");
+                    throw new BusinessLayerException("Project name cannot be empty");
                 }
                 if (_projectRepository.GetProjectByNameAndClient(project.Name, project.ClientID).Name != null)
                 {
@@ -72,7 +72,8 @@ namespace TimeSheet.Business.Services
                 {
                     throw new BusinessLayerException("Project name and status cannot be empty");
                 }
-                if (_projectRepository.GetProjectByNameAndClient(project.Name, project.ClientID).Name != null)
+                Project projectCheck = _projectRepository.GetProjectByNameAndClient(project.Name, project.ClientID);
+                if (project.Name != null && projectCheck.ID != project.ID)
                 {
                     throw new BusinessLayerException("That client already has a project named like that");
                 }
@@ -102,7 +103,11 @@ namespace TimeSheet.Business.Services
         {
             try
             {
-                return _projectRepository.SearchProjects(name);
+                if (name != "")
+                {
+                    return _projectRepository.SearchProjects(name);
+                }
+                return _projectRepository.GetAllProjects();
             }
             catch (DatabaseException ex)
             {

@@ -24,5 +24,9 @@ namespace TimeSheet.DAL.Entities
         [Required(ErrorMessage = "Country is required")]
         public int CountryID { get; set; }
         public bool IsDeleted { get; set; }
+        [Timestamp]
+        public byte[] Concurrency { get; set; }
+
+
     }
 }

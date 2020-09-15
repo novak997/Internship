@@ -74,11 +74,13 @@ namespace TimeSheet.Business.Services
         {
             try
             {
-                if (_userRepository.GetUserByEmail(user.Email).Name != null)
+                User userCheckEmail = _userRepository.GetUserByEmail(user.Email);
+                if (userCheckEmail.Name != null && userCheckEmail.ID != user.ID)
                 {
                     throw new BusinessLayerException("Email taken");
                 }
-                if (_userRepository.GetUserByUsername(user.Username).Name != null)
+                User userCheckUsername = _userRepository.GetUserByUsername(user.Username);
+                if (userCheckUsername.Name != null && userCheckUsername.ID != user.ID)
                 {
                     throw new BusinessLayerException("Username taken");
                 }
@@ -151,11 +153,11 @@ namespace TimeSheet.Business.Services
             
         }
 
-        public User Login(string username, string password)
+        public User Login(string email, string password)
         {
             try
             {
-                User user = _userRepository.GetUserByUsername(username);
+                User user = _userRepository.GetUserByEmail(email);
                 if (user.Username == null)
                 {
                     throw new BusinessLayerException("No such user exists");

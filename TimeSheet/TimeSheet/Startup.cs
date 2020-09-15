@@ -64,6 +64,15 @@ namespace TimeSheet
                 };
             });
 
+            services.AddCors(opt =>
+            {
+                opt.AddPolicy(name: "frontend",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:3000", "https://localhost:3000", "http://timesheet.njovanovic.com:3000").AllowAnyHeader().AllowAnyMethod();
+                    });
+            });
+
             services.AddMvc();
 
         }
@@ -79,6 +88,8 @@ namespace TimeSheet
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("frontend");
 
             app.UseAuthentication();
 

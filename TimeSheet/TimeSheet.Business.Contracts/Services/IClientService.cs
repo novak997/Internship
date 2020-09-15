@@ -14,5 +14,7 @@ namespace TimeSheet.Business.Contracts.Services
         public string DeleteClientLogically(int id);
         public IEnumerable<Client> SearchClients(string name);
         public IEnumerable<string> GetClientsFirstLetters();
+        public int GetNumberOfClients();
+        public IEnumerable<Client> GetClientsByPage(int page, int number);
     }
 }

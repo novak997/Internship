@@ -102,8 +102,8 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                         Name = reader["name"].ToString(),
                         Description = reader["description"].ToString(),
                         Status = reader["status"].ToString(),
-                        ClientID = Convert.ToInt32(reader["client"]),
-                        LeadID = Convert.ToInt32(reader["lead"]),
+                        ClientID = Convert.ToInt32(reader["clientID"]),
+                        LeadID = Convert.ToInt32(reader["leadID"]),
                         IsDeleted = Convert.ToBoolean(reader["isDeleted"])
                     };
                     projects.Add(project);
@@ -136,8 +136,8 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                     project.Name = reader["name"].ToString();
                     project.Description = reader["description"].ToString();
                     project.Status = reader["status"].ToString();
-                    project.ClientID = Convert.ToInt32(reader["client"]);
-                    project.LeadID = Convert.ToInt32(reader["lead"]);
+                    project.ClientID = Convert.ToInt32(reader["clientID"]);
+                    project.LeadID = Convert.ToInt32(reader["leadID"]);
                     project.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
                 }
                 return project;
@@ -195,8 +195,8 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                         Name = reader["name"].ToString(),
                         Description = reader["description"].ToString(),
                         Status = reader["status"].ToString(),
-                        ClientID = Convert.ToInt32(reader["client"]),
-                        LeadID = Convert.ToInt32(reader["lead"]),
+                        ClientID = Convert.ToInt32(reader["clientID"]),
+                        LeadID = Convert.ToInt32(reader["leadID"]),
                         IsDeleted = Convert.ToBoolean(reader["isDeleted"])
                     };
                     projects.Add(project);
@@ -255,8 +255,8 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                     project.Name = reader["name"].ToString();
                     project.Description = reader["description"].ToString();
                     project.Status = reader["status"].ToString();
-                    project.ClientID = Convert.ToInt32(reader["client"]);
-                    project.LeadID = Convert.ToInt32(reader["lead"]);
+                    project.ClientID = Convert.ToInt32(reader["clientID"]);
+                    project.LeadID = Convert.ToInt32(reader["leadID"]);
                     project.IsDeleted = Convert.ToBoolean(reader["isDeleted"]);
                 }
                 return project;
