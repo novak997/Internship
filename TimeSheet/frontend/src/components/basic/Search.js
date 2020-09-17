@@ -5,8 +5,13 @@ const Search = (props) => {
   const [searchInput, setSearchInput] = React.useState("");
 
   const search = (query) => {
+    props.setSearchQuery(query);
+    props.setCurrentPage(1);
+    /*
     let search = {
       name: query,
+      page: 1,
+      number: props.itemsPerPage,
     };
     if (query) {
       API.post("/" + props.type + "/search", search).then((response) => {
@@ -15,11 +20,10 @@ const Search = (props) => {
       });
       return;
     }
-    API.get("/client/" + props.currentPage + "/" + props.itemsPerPage).then(
-      (response) => {
-        props.setParentItems(response.data);
-      }
-    );
+    API.get("/client/1/" + props.itemsPerPage).then((response) => {
+      props.setParentItems(response.data);
+    });
+    */
   };
 
   useEffect(() => {

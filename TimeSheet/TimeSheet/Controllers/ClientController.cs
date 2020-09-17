@@ -121,7 +121,7 @@ namespace TimeSheet.Controllers
         {
             try
             {
-                return Ok(_clientService.SearchClients(search.Name));
+                return Ok(_clientService.SearchClients(search.Name, search.Page, search.Number));
             }
             catch (DatabaseException)
             {
@@ -158,6 +158,24 @@ namespace TimeSheet.Controllers
             try
             {
                 return Ok(_clientService.GetNumberOfClients());
+            }
+            catch (DatabaseException)
+            {
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpPost("number")]
+        public IActionResult GetNumberOfClients([FromBody] SearchDTO search)
+        {
+            try
+            {
+                return Ok(_clientService.GetNumberOfFilteredClients(search.Name));
             }
             catch (DatabaseException)
             {

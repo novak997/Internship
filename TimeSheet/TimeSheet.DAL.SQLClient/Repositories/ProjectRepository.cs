@@ -267,5 +267,42 @@ namespace TimeSheet.DAL.SQLClient.Repositories
             }
             
         }
+
+        public IEnumerable<Project> GetProjectsByClient(int client)
+        {
+            try
+            {
+                List<Project> projects = new List<Project>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetProjectsByClient", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@client", client);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Project project = new Project()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Name = reader["name"].ToString(),
+                        Description = reader["description"].ToString(),
+                        Status = reader["status"].ToString(),
+                        ClientID = Convert.ToInt32(reader["clientID"]),
+                        LeadID = Convert.ToInt32(reader["leadID"]),
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    };
+                    projects.Add(project);
+                }
+                return projects;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+        }
+
+        
     }
 }

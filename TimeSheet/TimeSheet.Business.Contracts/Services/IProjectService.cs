@@ -14,5 +14,6 @@ namespace TimeSheet.Business.Contracts.Services
         public string DeleteProjectLogically(int id);
         public IEnumerable<Project> SearchProjects(string name);
         public IEnumerable<string> GetProjectsFirstLetters();
+        public IEnumerable<Project> GetProjectsByClient(int client);
     }
 }

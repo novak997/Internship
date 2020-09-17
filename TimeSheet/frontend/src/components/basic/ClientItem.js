@@ -39,6 +39,7 @@ const ClientItem = (props) => {
       city: city,
       zip: zip,
       countryID: parseInt(country),
+      concurrency: props.client.concurrency,
     };
     API.put("/client", client)
       .then((response) => {
@@ -51,7 +52,7 @@ const ClientItem = (props) => {
   };
 
   const deleteSubmit = () => {
-    API.put("/client/" + props.client.id)
+    API.put("/client/" + props.client.id, props.client.concurrency)
       .then((response) => {
         console.log(response.data);
         props.setRefresh(!props.refresh);

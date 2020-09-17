@@ -13,6 +13,10 @@ const Projects = (props) => {
   const [refresh, setRefresh] = React.useState(false);
   const [emptySearch, setEmptySearch] = React.useState(false);
   const [resetLetters, setResetLetters] = React.useState(false);
+  const [numberOfClients, setNumberOfClients] = React.useState(0);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [itemsPerPage, setItemsPerPage] = React.useState(3);
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   useEffect(() => {
     API.get("/project").then((response) => {

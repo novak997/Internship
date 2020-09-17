@@ -187,18 +187,20 @@ namespace TimeSheet.DAL.SQLClient.Repositories
             
         }
         
-        public IEnumerable<Client> SearchClients(string query)
+        public IEnumerable<Client> SearchClients(string query, int page, int number)
         {
             try
             {
                 List<Client> clients = new List<Client>();
                 using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
-                SqlCommand command = new SqlCommand("dbo.uspSearchClients", connection)
+                SqlCommand command = new SqlCommand("dbo.uspSearchClientsByPage", connection)
                 {
                     CommandType = CommandType.StoredProcedure
                 };
                 connection.Open();
                 command.Parameters.AddWithValue("@query", query);
+                command.Parameters.AddWithValue("@page", page);
+                command.Parameters.AddWithValue("@number", number);
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
@@ -310,6 +312,32 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                 throw new DatabaseException("A database related exception has occurred");
             }
         }
+
+        public int GetNumberOfFilteredClients(string name)
+        {
+            try
+            {
+                int number = 0;
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetNumberOfFilteredClients", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@query", name);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    number = Convert.ToInt32(reader["number"]);
+                }
+                return number;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+        }
+
         public IEnumerable<Client> GetClientsByPage(int page, int number)
         {
             try
@@ -334,7 +362,8 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                         City = reader["city"].ToString(),
                         Zip = reader["zip"].ToString(),
                         CountryID = Convert.ToInt32(reader["countryID"]),
-                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"]),
+                        //Concurrency = Convert.FromBase64String(reader["concurrency"].ToString())
                     };
                     clients.Add(client);
                 }
@@ -345,5 +374,7 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                 throw new DatabaseException("A database related exception has occurred");
             }
         }
+
+
     }
 }

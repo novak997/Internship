@@ -17,5 +17,6 @@ namespace TimeSheet.DAL.Contracts.Repositories
         public IEnumerable<Project> SearchProjects(string name);
         public IEnumerable<string> GetProjectsFirstLetters();
         public Project GetProjectByNameAndClient(string name, int client);
+        public IEnumerable<Project> GetProjectsByClient(int client);
     }
 }

@@ -103,11 +103,7 @@ namespace TimeSheet.Business.Services
         {
             try
             {
-                if (name != "")
-                {
-                    return _projectRepository.SearchProjects(name);
-                }
-                return _projectRepository.GetAllProjects();
+                return _projectRepository.SearchProjects(name);
             }
             catch (DatabaseException ex)
             {
@@ -126,6 +122,18 @@ namespace TimeSheet.Business.Services
                 throw ex;
             }
             
+        }
+
+        public IEnumerable<Project> GetProjectsByClient(int client)
+        {
+            try
+            {
+                return _projectRepository.GetProjectsByClient(client);
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
         }
     }
 }

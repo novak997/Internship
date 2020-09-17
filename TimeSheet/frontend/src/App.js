@@ -39,9 +39,7 @@ function App() {
             <Route path="/index">
               <Timesheets accessToken={accessToken} />
             </Route>
-            <Route path="/days">
-              <Days accessToken={accessToken} />
-            </Route>
+            <Route path="/days" component={Days}></Route>
             <Route path="/categories">
               <Categories accessToken={accessToken} />
             </Route>

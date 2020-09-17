@@ -149,5 +149,23 @@ namespace TimeSheet.Controllers
             }
 
         }
+
+        [HttpGet("client/{id}")]
+        public IActionResult GetProjectsByClient(int id)
+        {
+            try
+            {
+                return Ok(_projectService.GetProjectsByClient(id));
+            }
+            catch (DatabaseException)
+            {
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
     }
 }

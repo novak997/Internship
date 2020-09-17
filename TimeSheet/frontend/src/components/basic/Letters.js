@@ -56,6 +56,7 @@ const Letters = (props) => {
             currentPage={props.currentPage}
             setCurrentPage={props.setCurrentPage}
             itemsPerPage={props.itemsPerPage}
+            setSearchQuery={props.setSearchQuery}
           />
         </li>
       );

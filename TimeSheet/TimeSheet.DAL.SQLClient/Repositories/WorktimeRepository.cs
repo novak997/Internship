@@ -46,6 +46,32 @@ namespace TimeSheet.DAL.SQLClient.Repositories
             
         }
 
+        public void UpdateWorktime(Worktime worktime)
+        {
+            try
+            {
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspUpdateWorktime", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@description", worktime.Description);
+                command.Parameters.AddWithValue("@hours", worktime.Hours);
+                command.Parameters.AddWithValue("@overtime", worktime.Overtime);
+                command.Parameters.AddWithValue("@client", worktime.ClientID);
+                command.Parameters.AddWithValue("@project", worktime.ProjectID);
+                command.Parameters.AddWithValue("@category", worktime.CategoryID);
+                command.Parameters.AddWithValue("@id", worktime.ID);
+                command.ExecuteNonQuery();
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+
+        }
+
         public IEnumerable<Worktime> GetWorktimesForUser(int id)
         {
             try
@@ -68,14 +94,88 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                         Hours = Convert.ToDouble(reader["hours"]),
                         Overtime = Convert.ToDouble(reader["overtime"]),
                         Date = Convert.ToDateTime(reader["date"]),
-                        ClientID = Convert.ToInt32(reader["client"]),
-                        ProjectID = Convert.ToInt32(reader["project"]),
-                        CategoryID = Convert.ToInt32(reader["category"]),
-                        UserID = Convert.ToInt32(reader["user"]),
+                        ClientID = Convert.ToInt32(reader["clientID"]),
+                        ProjectID = Convert.ToInt32(reader["projectID"]),
+                        CategoryID = Convert.ToInt32(reader["categoryID"]),
+                        UserID = Convert.ToInt32(reader["userID"]),
                     };
                     worktimes.Add(worktime);
                 }
                 return worktimes;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+            
+        }
+
+        public IEnumerable<Worktime> GetWorktimesForUserAndDate(int id, DateTime date)
+        {
+            try
+            {
+                List<Worktime> worktimes = new List<Worktime>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetWorktimesForUserAndDate", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                command.Parameters.AddWithValue("@date", date);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Worktime worktime = new Worktime()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Description = reader["description"].ToString(),
+                        Hours = Convert.ToDouble(reader["hours"]),
+                        Overtime = Convert.ToDouble(reader["overtime"]),
+                        Date = Convert.ToDateTime(reader["date"]),
+                        ClientID = Convert.ToInt32(reader["clientID"]),
+                        ProjectID = Convert.ToInt32(reader["projectID"]),
+                        CategoryID = Convert.ToInt32(reader["categoryID"]),
+                        UserID = Convert.ToInt32(reader["userID"]),
+                    };
+                    worktimes.Add(worktime);
+                }
+                return worktimes;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+
+        }
+
+        public double GetWorktimesTotalHours(int id, DateTime date)
+        {
+            try
+            {
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetWorktimesTotalHours", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@id", id);
+                command.Parameters.AddWithValue("@date", date);
+                SqlDataReader reader = command.ExecuteReader();
+                double sum = 0;
+                while (reader.Read())
+                {
+                    try
+                    {
+                        sum = Convert.ToDouble(reader["totalHours"]);
+                    }
+                    catch
+                    {
+                        sum = 0;
+                    }
+
+                }
+                return sum;
             }
             catch (SqlException)
             {
@@ -111,10 +211,10 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                         Hours = Convert.ToDouble(reader["hours"]),
                         Overtime = Convert.ToDouble(reader["overtime"]),
                         Date = Convert.ToDateTime(reader["date"]),
-                        ClientID = Convert.ToInt32(reader["client"]),
-                        ProjectID = Convert.ToInt32(reader["project"]),
-                        CategoryID = Convert.ToInt32(reader["category"]),
-                        UserID = Convert.ToInt32(reader["user"]),
+                        ClientID = Convert.ToInt32(reader["clientID"]),
+                        ProjectID = Convert.ToInt32(reader["projectID"]),
+                        CategoryID = Convert.ToInt32(reader["categoryID"]),
+                        UserID = Convert.ToInt32(reader["userID"]),
                     };
                     worktimes.Add(worktime);
                 }

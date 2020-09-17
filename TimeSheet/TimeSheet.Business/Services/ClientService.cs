@@ -99,11 +99,11 @@ namespace TimeSheet.Business.Services
             }
             
         }
-        public IEnumerable<Client> SearchClients(string name)
+        public IEnumerable<Client> SearchClients(string name, int page, int number)
         {
             try
             {
-                return _clientRepository.SearchClients(name);
+                return _clientRepository.SearchClients(name, page, number);
             }
             catch (DatabaseException ex)
             {
@@ -129,6 +129,18 @@ namespace TimeSheet.Business.Services
             try
             {
                 return _clientRepository.GetNumberOfClients();
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+        }
+
+        public int GetNumberOfFilteredClients(string name)
+        {
+            try
+            {
+                return _clientRepository.GetNumberOfFilteredClients(name);
             }
             catch (DatabaseException ex)
             {

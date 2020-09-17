@@ -12,9 +12,10 @@ namespace TimeSheet.Business.Contracts.Services
         public Client GetClientById(int id);
         public string UpdateClient(Client client);
         public string DeleteClientLogically(int id);
-        public IEnumerable<Client> SearchClients(string name);
+        public IEnumerable<Client> SearchClients(string name, int page, int number);
         public IEnumerable<string> GetClientsFirstLetters();
         public int GetNumberOfClients();
+        public int GetNumberOfFilteredClients(string name);
         public IEnumerable<Client> GetClientsByPage(int page, int number);
     }
 }

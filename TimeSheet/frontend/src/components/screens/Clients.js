@@ -16,6 +16,7 @@ const Clients = (props) => {
   const [numberOfClients, setNumberOfClients] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [itemsPerPage, setItemsPerPage] = React.useState(3);
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   useEffect(() => {
     /*
@@ -26,12 +27,12 @@ const Clients = (props) => {
     API.get("/client/letters").then((response) => {
       setLetters(response.data);
     });
+    /*
     API.get("/client/number").then((response) => {
       setNumberOfClients(response.data);
-      console.log(response.data);
-      console.log(numberOfClients);
     });
-    API.get("/client/" + currentPage + "/" + itemsPerPage).then((response) => {
+    */
+    API.get("/client/1/" + itemsPerPage).then((response) => {
       setClients(response.data);
       console.log(response.data);
     });
@@ -44,11 +45,33 @@ const Clients = (props) => {
   }, []);
 
   useEffect(() => {
-    API.get("/client/" + currentPage + "/" + itemsPerPage).then((response) => {
+    console.log(searchQuery);
+    if (searchQuery === "") {
+      API.get("/client/" + currentPage + "/" + itemsPerPage).then(
+        (response) => {
+          setClients(response.data);
+          console.log(response.data);
+        }
+      );
+      API.get("/client/number").then((response) => {
+        setNumberOfClients(response.data);
+      });
+      return;
+    }
+    let search = {
+      name: searchQuery,
+      page: currentPage,
+      number: itemsPerPage,
+    };
+    console.log(search);
+    API.post("/client/search/", search).then((response) => {
       setClients(response.data);
       console.log(response.data);
     });
-  }, [currentPage]);
+    API.post("/client/number", search).then((response) => {
+      setNumberOfClients(response.data);
+    });
+  }, [currentPage, searchQuery]);
 
   return (
     <div className="wrapper">
@@ -72,6 +95,7 @@ const Clients = (props) => {
             currentPage={currentPage}
             setCurrentPage={setCurrentPage}
             itemsPerPage={itemsPerPage}
+            setSearchQuery={setSearchQuery}
           />
         </div>
         <NewClient
@@ -91,6 +115,7 @@ const Clients = (props) => {
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           itemsPerPage={itemsPerPage}
+          setSearchQuery={setSearchQuery}
         />
         <ViewClients
           clients={clients}
