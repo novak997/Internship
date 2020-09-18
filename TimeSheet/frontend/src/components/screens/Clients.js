@@ -19,20 +19,10 @@ const Clients = (props) => {
   const [searchQuery, setSearchQuery] = React.useState("");
 
   useEffect(() => {
-    /*
-    API.get("/client").then((response) => {
-      setClients(response.data);
-    });
-    */
     API.get("/client/letters").then((response) => {
       setLetters(response.data);
     });
-    /*
-    API.get("/client/number").then((response) => {
-      setNumberOfClients(response.data);
-    });
-    */
-    API.get("/client/1/" + itemsPerPage).then((response) => {
+    API.get("/client/" + currentPage + "/" + itemsPerPage).then((response) => {
       setClients(response.data);
       console.log(response.data);
     });

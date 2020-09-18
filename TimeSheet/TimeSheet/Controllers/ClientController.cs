@@ -171,7 +171,7 @@ namespace TimeSheet.Controllers
         }
 
         [HttpPost("number")]
-        public IActionResult GetNumberOfClients([FromBody] SearchDTO search)
+        public IActionResult GetNumberOfFilteredClients([FromBody] SearchDTO search)
         {
             try
             {

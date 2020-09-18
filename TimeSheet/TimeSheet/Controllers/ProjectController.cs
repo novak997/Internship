@@ -119,7 +119,7 @@ namespace TimeSheet.Controllers
         {
             try
             {
-                return Ok(_projectService.SearchProjects(search.Name));
+                return Ok(_projectService.SearchProjects(search.Name, search.Page, search.Number));
             }
             catch (DatabaseException)
             {
@@ -156,6 +156,60 @@ namespace TimeSheet.Controllers
             try
             {
                 return Ok(_projectService.GetProjectsByClient(id));
+            }
+            catch (DatabaseException)
+            {
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpGet("number")]
+        public IActionResult GetNumberOfProjects()
+        {
+            try
+            {
+                return Ok(_projectService.GetNumberOfProjects());
+            }
+            catch (DatabaseException)
+            {
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpPost("number")]
+        public IActionResult GetNumberOfFilteredProjects([FromBody] SearchDTO search)
+        {
+            try
+            {
+                return Ok(_projectService.GetNumberOfFilteredProjects(search.Name));
+            }
+            catch (DatabaseException)
+            {
+                return StatusCode(500);
+            }
+            catch (BusinessLayerException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpGet("{page}/{number}")]
+        public IActionResult GetProjectsByPage(int page, int number)
+        {
+            try
+            {
+                return Ok(_projectService.GetProjectsByPage(page, number));
             }
             catch (DatabaseException)
             {

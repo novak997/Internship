@@ -4,6 +4,7 @@ import ViewProjects from "../basic/ViewProjects";
 import Letters from "../basic/Letters";
 import NewProject from "../basic/NewProject";
 import Search from "../basic/Search";
+import Pages from "../basic/Pages";
 
 const Projects = (props) => {
   const [projects, setProjects] = React.useState([]);
@@ -13,15 +14,16 @@ const Projects = (props) => {
   const [refresh, setRefresh] = React.useState(false);
   const [emptySearch, setEmptySearch] = React.useState(false);
   const [resetLetters, setResetLetters] = React.useState(false);
-  const [numberOfClients, setNumberOfClients] = React.useState(0);
+  const [numberOfProjects, setNumberOfProjects] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [itemsPerPage, setItemsPerPage] = React.useState(3);
   const [searchQuery, setSearchQuery] = React.useState("");
 
   useEffect(() => {
-    API.get("/project").then((response) => {
+    API.get("/project/" + currentPage + "/" + itemsPerPage).then((response) => {
       setProjects(response.data);
     });
+
     API.get("/project/letters").then((response) => {
       setLetters(response.data);
     });
@@ -35,6 +37,35 @@ const Projects = (props) => {
       setUsers(response.data);
     });
   }, []);
+
+  useEffect(() => {
+    console.log(searchQuery);
+    if (searchQuery === "") {
+      API.get("/project/" + currentPage + "/" + itemsPerPage).then(
+        (response) => {
+          setProjects(response.data);
+          console.log(response.data);
+        }
+      );
+      API.get("/project/number").then((response) => {
+        setNumberOfProjects(response.data);
+      });
+      return;
+    }
+    let search = {
+      name: searchQuery,
+      page: currentPage,
+      number: itemsPerPage,
+    };
+    console.log(search);
+    API.post("/project/search/", search).then((response) => {
+      setProjects(response.data);
+      console.log(response.data);
+    });
+    API.post("/project/number", search).then((response) => {
+      setNumberOfProjects(response.data);
+    });
+  }, [currentPage, searchQuery]);
 
   return (
     <div className="wrapper">
@@ -55,6 +86,10 @@ const Projects = (props) => {
             setResetLetters={setResetLetters}
             emptySearch={emptySearch}
             setEmptySearch={setEmptySearch}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            setSearchQuery={setSearchQuery}
           />
         </div>
         <NewProject
@@ -72,6 +107,10 @@ const Projects = (props) => {
           setResetLetters={setResetLetters}
           emptySearch={emptySearch}
           setEmptySearch={setEmptySearch}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          setSearchQuery={setSearchQuery}
         />
         <ViewProjects
           projects={projects}
@@ -80,22 +119,15 @@ const Projects = (props) => {
           refresh={refresh}
           setRefresh={setRefresh}
         />
-        <div className="pagination">
-          <ul>
-            <li>
-              <a href="javascript:;">1</a>
-            </li>
-            <li>
-              <a href="javascript:;">2</a>
-            </li>
-            <li>
-              <a href="javascript:;">3</a>
-            </li>
-            <li className="last">
-              <a href="javascript:;">Next</a>
-            </li>
-          </ul>
-        </div>
+        <Pages
+          key="pages-client"
+          numberOfItems={numberOfProjects}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          setResetLetters={setResetLetters}
+          setEmptySearch={setEmptySearch}
+        />
       </section>
     </div>
   );

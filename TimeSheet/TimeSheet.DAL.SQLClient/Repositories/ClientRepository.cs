@@ -212,7 +212,8 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                         City = reader["city"].ToString(),
                         Zip = reader["zip"].ToString(),
                         CountryID = Convert.ToInt32(reader["countryID"]),
-                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"]),
+                        Concurrency = reader.GetFieldValue<byte[]>("concurrency")
                     };
                     clients.Add(client);
                 }
@@ -241,6 +242,7 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                 command.Parameters.AddWithValue("@zip", client.Zip);
                 command.Parameters.AddWithValue("@country", client.CountryID);
                 command.Parameters.AddWithValue("@id", client.ID);
+                command.Parameters.AddWithValue("@concurrency", client.Concurrency);
                 command.Parameters.Add("@violation", SqlDbType.Bit).Direction = ParameterDirection.Output;
                 command.ExecuteNonQuery();
                 bool violation = (Convert.ToBoolean(command.Parameters["@violation"].Value));
@@ -363,7 +365,7 @@ namespace TimeSheet.DAL.SQLClient.Repositories
                         Zip = reader["zip"].ToString(),
                         CountryID = Convert.ToInt32(reader["countryID"]),
                         IsDeleted = Convert.ToBoolean(reader["isDeleted"]),
-                        //Concurrency = Convert.FromBase64String(reader["concurrency"].ToString())
+                        Concurrency = reader.GetFieldValue<byte[]>("concurrency")
                     };
                     clients.Add(client);
                 }

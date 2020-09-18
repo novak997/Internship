@@ -27,7 +27,7 @@ namespace TimeSheet.Business.Services
                 {
                     throw new BusinessLayerException("Project name cannot be empty");
                 }
-                if (_projectRepository.GetProjectByNameAndClient(project.Name, project.ClientID).Name != null)
+                if (_projectRepository.GetProjectByNameAndClient(project.Name, project.ClientID) != null)
                 {
                     throw new BusinessLayerException("That client already has a project named like that");
                 }
@@ -99,11 +99,11 @@ namespace TimeSheet.Business.Services
             }
             
         }
-        public IEnumerable<Project> SearchProjects(string name)
+        public IEnumerable<Project> SearchProjects(string name, int page, int number)
         {
             try
             {
-                return _projectRepository.SearchProjects(name);
+                return _projectRepository.SearchProjects(name, page, number);
             }
             catch (DatabaseException ex)
             {
@@ -129,6 +129,42 @@ namespace TimeSheet.Business.Services
             try
             {
                 return _projectRepository.GetProjectsByClient(client);
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+        }
+
+        public int GetNumberOfProjects()
+        {
+            try
+            {
+                return _projectRepository.GetNumberOfProjects();
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+        }
+
+        public int GetNumberOfFilteredProjects(string name)
+        {
+            try
+            {
+                return _projectRepository.GetNumberOfFilteredProjects(name);
+            }
+            catch (DatabaseException ex)
+            {
+                throw ex;
+            }
+        }
+
+        public IEnumerable<Project> GetProjectsByPage(int page, int number)
+        {
+            try
+            {
+                return _projectRepository.GetProjectsByPage(page, number);
             }
             catch (DatabaseException ex)
             {

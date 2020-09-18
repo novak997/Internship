@@ -12,8 +12,11 @@ namespace TimeSheet.Business.Contracts.Services
         public Project GetProjectById(int id);
         public string UpdateProject(Project project);
         public string DeleteProjectLogically(int id);
-        public IEnumerable<Project> SearchProjects(string name);
+        public IEnumerable<Project> SearchProjects(string name, int page, int number);
         public IEnumerable<string> GetProjectsFirstLetters();
         public IEnumerable<Project> GetProjectsByClient(int client);
+        public int GetNumberOfProjects();
+        public int GetNumberOfFilteredProjects(string name);
+        public IEnumerable<Project> GetProjectsByPage(int page, int number);
     }
 }

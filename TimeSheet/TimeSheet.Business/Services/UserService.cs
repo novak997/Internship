@@ -29,11 +29,11 @@ namespace TimeSheet.Business.Services
                 {
                     throw new BusinessLayerException("Name, username and email cannot be empty");
                 }
-                if (_userRepository.GetUserByEmail(user.Email).Name != null)
+                if (_userRepository.GetUserByEmail(user.Email) != null)
                 {
                     throw new BusinessLayerException("Email taken");
                 }
-                if (_userRepository.GetUserByUsername(user.Username).Name != null)
+                if (_userRepository.GetUserByUsername(user.Username) != null)
                 {
                     throw new BusinessLayerException("Username taken");
                 }

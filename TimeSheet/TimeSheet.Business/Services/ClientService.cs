@@ -27,10 +27,6 @@ namespace TimeSheet.Business.Services
                 {
                     throw new BusinessLayerException("Client name, address, city and zip cannot be empty");
                 }
-                if (_clientRepository.GetClientByNameAndAddress(client.Name, client.Address).Name != null)
-                {
-                    throw new BusinessLayerException("A client with that name and address already exists");
-                }
                 _clientRepository.AddClient(client);
                 return "Client successfully added";
             }
@@ -71,11 +67,6 @@ namespace TimeSheet.Business.Services
                 if (client.Name == "" || client.Name == null || client.Address == "" || client.Address == null || client.City == "" || client.City == null || client.Zip == "" || client.Zip == null)
                 {
                     throw new BusinessLayerException("Client name, address, city and zip cannot be empty");
-                }
-                Client clientCheck = _clientRepository.GetClientByNameAndAddress(client.Name, client.Address);
-                if (clientCheck.Name != null && clientCheck.ID != client.ID)
-                {
-                    throw new BusinessLayerException("A client with that name and address already exists");
                 }
                 _clientRepository.UpdateClient(client);
                 return "Client successfully updated";

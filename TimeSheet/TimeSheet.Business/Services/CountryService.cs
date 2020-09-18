@@ -29,11 +29,11 @@ namespace TimeSheet.Business.Services
                 {
                     throw new BusinessLayerException("Country name and short name cannot be empty");
                 }
-                if (_countryRepository.GetCountryByName(country.Name).Name != null)
+                if (_countryRepository.GetCountryByName(country.Name) != null)
                 {
                     throw new BusinessLayerException("Country name taken");
                 }
-                if (_countryRepository.GetCountryByShort(country.Short).Name != null)
+                if (_countryRepository.GetCountryByShort(country.Short) != null)
                 {
                     throw new BusinessLayerException("Country short name taken");
                 }

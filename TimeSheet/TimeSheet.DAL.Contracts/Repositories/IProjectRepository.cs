@@ -14,9 +14,12 @@ namespace TimeSheet.DAL.Contracts.Repositories
         public void UpdateProject(Project project);
         public void DeleteProjectPhysically(int id);
         public void DeleteProjectLogically(int id);
-        public IEnumerable<Project> SearchProjects(string name);
+        public IEnumerable<Project> SearchProjects(string name, int page, int number);
         public IEnumerable<string> GetProjectsFirstLetters();
         public Project GetProjectByNameAndClient(string name, int client);
         public IEnumerable<Project> GetProjectsByClient(int client);
+        public IEnumerable<Project> GetProjectsByPage(int page, int number);
+        public int GetNumberOfProjects();
+        public int GetNumberOfFilteredProjects(string name);
     }
 }

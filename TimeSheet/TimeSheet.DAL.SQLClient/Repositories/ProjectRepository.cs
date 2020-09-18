@@ -174,18 +174,20 @@ namespace TimeSheet.DAL.SQLClient.Repositories
             
         }
         
-        public IEnumerable<Project> SearchProjects(string query)
+        public IEnumerable<Project> SearchProjects(string query, int page, int number)
         {
             try
             {
                 List<Project> projects = new List<Project>();
                 using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
-                SqlCommand command = new SqlCommand("dbo.uspSearchProjects", connection)
+                SqlCommand command = new SqlCommand("dbo.uspSearchProjectsByPage", connection)
                 {
                     CommandType = CommandType.StoredProcedure
                 };
                 connection.Open();
                 command.Parameters.AddWithValue("@query", query);
+                command.Parameters.AddWithValue("@page", page);
+                command.Parameters.AddWithValue("@number", number);
                 SqlDataReader reader = command.ExecuteReader();
                 while (reader.Read())
                 {
@@ -303,6 +305,91 @@ namespace TimeSheet.DAL.SQLClient.Repositories
             }
         }
 
-        
+        public int GetNumberOfProjects()
+        {
+            try
+            {
+                int number = 0;
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetNumberOfProjects", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    number = Convert.ToInt32(reader["number"]);
+                }
+                return number;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+        }
+
+        public int GetNumberOfFilteredProjects(string name)
+        {
+            try
+            {
+                int number = 0;
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetNumberOfFilteredProjects", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@query", name);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    number = Convert.ToInt32(reader["number"]);
+                }
+                return number;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+        }
+
+        public IEnumerable<Project> GetProjectsByPage(int page, int number)
+        {
+            try
+            {
+                List<Project> projects = new List<Project>();
+                using SqlConnection connection = new SqlConnection(_configuration.GetConnectionString("Database"));
+                SqlCommand command = new SqlCommand("dbo.uspGetProjectsByPage", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+                connection.Open();
+                command.Parameters.AddWithValue("@page", page);
+                command.Parameters.AddWithValue("@number", number);
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Project project = new Project()
+                    {
+                        ID = Convert.ToInt32(reader["id"]),
+                        Name = reader["name"].ToString(),
+                        Description = reader["description"].ToString(),
+                        Status = reader["status"].ToString(),
+                        ClientID = Convert.ToInt32(reader["clientID"]),
+                        LeadID = Convert.ToInt32(reader["leadID"]),
+                        IsDeleted = Convert.ToBoolean(reader["isDeleted"])
+                    };
+                    projects.Add(project);
+                }
+                return projects;
+            }
+            catch (SqlException)
+            {
+                throw new DatabaseException("A database related exception has occurred");
+            }
+
+        }
+
     }
 }

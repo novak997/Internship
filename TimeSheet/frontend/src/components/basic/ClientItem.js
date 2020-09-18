@@ -41,6 +41,7 @@ const ClientItem = (props) => {
       countryID: parseInt(country),
       concurrency: props.client.concurrency,
     };
+    console.log(props.client.concurrency);
     API.put("/client", client)
       .then((response) => {
         console.log(response.data);

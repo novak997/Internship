@@ -27,7 +27,7 @@ namespace TimeSheet.Business.Services
                 {
                     throw new BusinessLayerException("Category name cannot be empty");
                 }
-                if (_categoryRepository.GetCategoryByName(category.Name).Name != null)
+                if (_categoryRepository.GetCategoryByName(category.Name) != null)
                 {
                     throw new BusinessLayerException("Category name taken");
                 }
